@@ -1,0 +1,196 @@
+{
+  "dataset": "MD2POS Benchmark v1.1",
+  "version": "1.1.0",
+  "created": "2026-03",
+  "description": "Synthetic benchmark for multi-dimensional dynamic parallel online scheduling (MD2POS) with runtime-revealed dependencies. Four application domains x five scales x 20 instances. v1.1 = the v1.0 instance files (unchanged) plus recovered generator seeds and a load-time repair of back edges in ai_ft (see README.md).",
+  "paper": "Graph-Mediated Hierarchical Reinforcement Learning with Dynamic Dependency Awareness (under review at Computers & Operations Research).",
+  "domains": [
+    "genomic",
+    "video",
+    "ai_ft",
+    "financial"
+  ],
+  "scales": [
+    50,
+    100,
+    200,
+    500,
+    1000
+  ],
+  "n_seeds_per_scale": 20,
+  "total_instances": 400,
+  "domain_descriptions": {
+    "genomic": "Whole-genome sequencing (WGS) bioinformatics pipeline. Stages: alignment (BWA-MEM) → sort/index (SAMtools) → variant calling (FreeBayes or GATK HaplotypeCaller). Dynamic branching (RRD) models stochastic heterozygosity: samples triggering the dual-caller path with probability p_rrd.",
+    "video": "Video transcoding and streaming preparation pipeline. Stages: decode → scene-detect → multi-resolution encode (H.264/H.265, 4K/1080p/720p/480p) → package (HLS/DASH) → thumbnail generation → upload. RRD branching models adaptive bitrate decisions triggered by per-scene complexity analysis.",
+    "ai_ft": "Large language model fine-tuning pipeline for enterprise AI services. Stages: data ingestion → preprocessing/tokenization → model fine-tuning (GPU-heavy) → evaluation → checkpoint management → deployment packaging. RRD branching models conditional evaluation routing: models exceeding quality threshold proceed to A/B testing.",
+    "financial": "Batch risk calculation and regulatory reporting pipeline for digital financial services. Stages: market data ingestion → position loading → risk factor computation (VaR/CVaR) → stress testing → regulatory aggregation → report generation. RRD branching models threshold-triggered stress scenario expansion: high-volatility regimes activate additional Monte Carlo simulation paths."
+  },
+  "statistics": {
+    "genomic": {
+      "N50": {
+        "n_instances": 20,
+        "avg_proc_time_s": 226.6825693016052,
+        "std_proc_time_s": 113.27338851529358,
+        "avg_n_edges": 88.55,
+        "avg_rrd_fraction": 0.307
+      },
+      "N100": {
+        "n_instances": 20,
+        "avg_proc_time_s": 221.83948935317994,
+        "std_proc_time_s": 110.55098871017577,
+        "avg_n_edges": 180.8,
+        "avg_rrd_fraction": 0.31500000000000006
+      },
+      "N200": {
+        "n_instances": 20,
+        "avg_proc_time_s": 220.20635151386261,
+        "std_proc_time_s": 108.90219587064705,
+        "avg_n_edges": 362.55,
+        "avg_rrd_fraction": 0.30575
+      },
+      "N500": {
+        "n_instances": 20,
+        "avg_proc_time_s": 220.84759640541077,
+        "std_proc_time_s": 109.5521568937584,
+        "avg_n_edges": 899.1,
+        "avg_rrd_fraction": 0.2998
+      },
+      "N1000": {
+        "n_instances": 20,
+        "avg_proc_time_s": 219.51693045749664,
+        "std_proc_time_s": 108.97108463706361,
+        "avg_n_edges": 1803.55,
+        "avg_rrd_fraction": 0.30574999999999997
+      }
+    },
+    "video": {
+      "N50": {
+        "n_instances": 20,
+        "avg_proc_time_s": 185.99364637947082,
+        "std_proc_time_s": 108.06595394060315,
+        "avg_n_edges": 91.5,
+        "avg_rrd_fraction": 0.335
+      },
+      "N100": {
+        "n_instances": 20,
+        "avg_proc_time_s": 185.18826780128478,
+        "std_proc_time_s": 108.70628226692862,
+        "avg_n_edges": 185.3,
+        "avg_rrd_fraction": 0.351
+      },
+      "N200": {
+        "n_instances": 20,
+        "avg_proc_time_s": 183.5338971338272,
+        "std_proc_time_s": 109.83043670806119,
+        "avg_n_edges": 371.95,
+        "avg_rrd_fraction": 0.352
+      },
+      "N500": {
+        "n_instances": 20,
+        "avg_proc_time_s": 183.9546533903122,
+        "std_proc_time_s": 109.55823759295605,
+        "avg_n_edges": 931.25,
+        "avg_rrd_fraction": 0.34729999999999994
+      },
+      "N1000": {
+        "n_instances": 20,
+        "avg_proc_time_s": 183.46209608306884,
+        "std_proc_time_s": 110.10215684215939,
+        "avg_n_edges": 1863.0,
+        "avg_rrd_fraction": 0.3531
+      }
+    },
+    "ai_ft": {
+      "N50": {
+        "n_instances": 20,
+        "avg_proc_time_s": 221.23454782867432,
+        "std_proc_time_s": 144.43724108125474,
+        "avg_n_edges": 51.75,
+        "avg_rrd_fraction": 0.42800000000000005
+      },
+      "N100": {
+        "n_instances": 20,
+        "avg_proc_time_s": 225.55027876853944,
+        "std_proc_time_s": 146.54063117037023,
+        "avg_n_edges": 116.6,
+        "avg_rrd_fraction": 0.43500000000000005
+      },
+      "N200": {
+        "n_instances": 20,
+        "avg_proc_time_s": 228.6034793138504,
+        "std_proc_time_s": 148.7617589580806,
+        "avg_n_edges": 248.1,
+        "avg_rrd_fraction": 0.4367500000000001
+      },
+      "N500": {
+        "n_instances": 20,
+        "avg_proc_time_s": 227.40556162033081,
+        "std_proc_time_s": 148.24461986859643,
+        "avg_n_edges": 649.3,
+        "avg_rrd_fraction": 0.44580000000000003
+      },
+      "N1000": {
+        "n_instances": 20,
+        "avg_proc_time_s": 228.20705530605315,
+        "std_proc_time_s": 151.51050152249508,
+        "avg_n_edges": 1321.95,
+        "avg_rrd_fraction": 0.44539999999999996
+      }
+    },
+    "financial": {
+      "N50": {
+        "n_instances": 20,
+        "avg_proc_time_s": 223.66052583694457,
+        "std_proc_time_s": 131.13092236188265,
+        "avg_n_edges": 125.0,
+        "avg_rrd_fraction": 0.29
+      },
+      "N100": {
+        "n_instances": 20,
+        "avg_proc_time_s": 220.72894016075134,
+        "std_proc_time_s": 129.8641517284362,
+        "avg_n_edges": 384.95,
+        "avg_rrd_fraction": 0.30100000000000005
+      },
+      "N200": {
+        "n_instances": 20,
+        "avg_proc_time_s": 224.65969673633575,
+        "std_proc_time_s": 130.2472370703381,
+        "avg_n_edges": 1311.85,
+        "avg_rrd_fraction": 0.30425
+      },
+      "N500": {
+        "n_instances": 20,
+        "avg_proc_time_s": 224.08947079353334,
+        "std_proc_time_s": 129.6829681603429,
+        "avg_n_edges": 7316.4,
+        "avg_rrd_fraction": 0.2994
+      },
+      "N1000": {
+        "n_instances": 20,
+        "avg_proc_time_s": 226.48112174606322,
+        "std_proc_time_s": 132.13385539439463,
+        "avg_n_edges": 28148.2,
+        "avg_rrd_fraction": 0.29925
+      }
+    }
+  },
+  "file_format": {
+    "type": "numpy .npz compressed",
+    "fields": {
+      "sw_types": "[N] int32   — software type index [0, num_sw)",
+      "proc_times": "[N] float32 — processing time in seconds",
+      "cpu_demand": "[N] float32 — CPU demand as fraction of node capacity",
+      "ram_demand": "[N] float32 — RAM demand as fraction of node capacity",
+      "gpu_demand": "[N] float32 — GPU demand as fraction of node capacity",
+      "disk_demand": "[N] float32 — disk demand as fraction of node capacity",
+      "priorities": "[N] float32 — task priority in [0, 1]",
+      "arrival_times": "[N] float32 — task arrival time in seconds",
+      "rrd_probs": "[N] float32 — RRD branching probability per task",
+      "edges": "[E, 2] int32 — dependency edges (src, dst), 0-based"
+    }
+  },
+  "license": "CC BY 4.0 — free to use with attribution",
+  "contact": "See paper for author contact information.",
+  "parameter_note": "All timing, demand and branching parameters are synthetic and set by the authors; they are not calibrated from execution traces."
+}

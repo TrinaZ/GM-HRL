@@ -1,0 +1,96 @@
+# Example pipeline specification for the real WGS run (Section 6.3).
+# Replace commands, requests and estimates with your own scripts and
+# historical averages (e.g. mean durations from earlier FIFO runs).
+name: wgs_variant_calling
+
+# One model capacity unit per resource. The policies were trained with a
+# capacity of 4 units per resource, so choose units = capacity / 4.
+model_units: {cpu: 8, ram: 32, gpu: 1, disk: 1}
+capacity:    {cpu: 32, ram: 128, gpu: 4, disk: 4}    # this server: cores, GB, GPUs, I/O slots
+instances_per_stage: 4          # max concurrent tasks of one stage type
+sla_seconds: 1800               # per-task response threshold Delta t_resp (C_i - r_i)
+sample_sla_seconds: 14400       # optional per-sample turnaround target (reported separately)
+workdir: /data/wgs_run          # working directory for all commands
+
+# Available placeholders in commands: {sample} {stage} {task} {workdir} {threads} {mem_gb}
+stages:
+  - name: fastqc
+    model_type: FastQC
+    cmd: "bash /opt/pipeline/fastqc.sh {sample} {workdir} {threads}"
+    cpu: 2
+    ram: 4
+    disk: 0.5
+    est_seconds: 180
+
+  - name: bwa
+    model_type: BWA-MEM
+    cmd: "bash /opt/pipeline/bwa_mem.sh {sample} {workdir} {threads}"
+    cpu: 16
+    ram: 16
+    disk: 1
+    est_seconds: 900
+
+  - name: sort
+    model_type: SAMtools-sort
+    after: [bwa]
+    cmd: "bash /opt/pipeline/samtools_sort.sh {sample} {workdir} {threads}"
+    cpu: 4
+    ram: 8
+    disk: 1
+    est_seconds: 300
+
+  - name: index
+    model_type: SAMtools-idx
+    after: [sort]
+    cmd: "bash /opt/pipeline/samtools_index.sh {sample} {workdir}"
+    cpu: 1
+    ram: 2
+    disk: 0.5
+    est_seconds: 60
+    # Branch point (runtime-revealed dependency): the variant-calling path is
+    # decided by mapping quality after indexing.
+    branch:
+      rrd_prob: 0.3        # historical share of samples taking the dual-caller path
+      metric_cmd: "python /opt/pipeline/mapq_fraction.py {workdir}/{sample}.sorted.bam"   # prints e.g. 0.91
+      rules:
+        - if: ">= 0.85"
+          reveal: [gatk]
+        - else: [gatk, freebayes]
+      # Alternative: let the stage script write the decision itself:
+      # decision_file: "{sample}.branch.json"     # {"metric": 0.91, "reveal": ["gatk"]}
+
+  - name: gatk
+    model_type: GATK-HC
+    dynamic: true
+    cmd: "bash /opt/pipeline/gatk_hc.sh {sample} {workdir} {threads}"
+    cpu: 8
+    ram: 24
+    disk: 1
+    est_seconds: 1200
+
+  - name: freebayes
+    model_type: FreeBayes
+    dynamic: true
+    cmd: "bash /opt/pipeline/freebayes.sh {sample} {workdir}"
+    cpu: 4
+    ram: 8
+    disk: 1
+    est_seconds: 900
+
+  - name: bcftools
+    model_type: bcftools
+    after: [index]          # revealed callers are inserted between index and bcftools
+    cmd: "bash /opt/pipeline/bcftools_merge_filter.sh {sample} {workdir}"
+    cpu: 2
+    ram: 4
+    disk: 0.5
+    est_seconds: 120
+
+  - name: multiqc
+    model_type: MultiQC
+    after: [bcftools, fastqc]
+    cmd: "bash /opt/pipeline/report.sh {sample} {workdir}"
+    cpu: 1
+    ram: 2
+    disk: 0.5
+    est_seconds: 60

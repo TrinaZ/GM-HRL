@@ -1,0 +1,979 @@
+{
+  "metadata": {
+    "domain": "genomic",
+    "N": 50,
+    "seed": 5,
+    "num_sw": 8,
+    "software_names": [
+      "BWA-MEM",
+      "SAMtools-sort",
+      "SAMtools-idx",
+      "FreeBayes",
+      "GATK-HC",
+      "bcftools",
+      "FastQC",
+      "MultiQC"
+    ],
+    "dag_type": "pipeline_fanout",
+    "p_rrd": 0.3,
+    "n_edges": 76
+  },
+  "tasks": [
+    {
+      "id": 0,
+      "sw_type": 0,
+      "sw_name": "BWA-MEM",
+      "proc_time_s": 329.83,
+      "cpu": 0.717,
+      "ram": 0.518,
+      "gpu": 0.043,
+      "disk": 0.547,
+      "priority": 0.691,
+      "arrival_time_s": 16.33,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 1,
+      "sw_type": 0,
+      "sw_name": "BWA-MEM",
+      "proc_time_s": 271.28,
+      "cpu": 0.63,
+      "ram": 0.48,
+      "gpu": 0.001,
+      "disk": 0.541,
+      "priority": 0.308,
+      "arrival_time_s": 24.63,
+      "rrd_prob": 0.462
+    },
+    {
+      "id": 2,
+      "sw_type": 0,
+      "sw_name": "BWA-MEM",
+      "proc_time_s": 467.86,
+      "cpu": 0.652,
+      "ram": 0.528,
+      "gpu": 0.0,
+      "disk": 0.703,
+      "priority": 0.964,
+      "arrival_time_s": 43.82,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 3,
+      "sw_type": 0,
+      "sw_name": "BWA-MEM",
+      "proc_time_s": 211.49,
+      "cpu": 0.7,
+      "ram": 0.347,
+      "gpu": 0.0,
+      "disk": 0.519,
+      "priority": 0.332,
+      "arrival_time_s": 60.32,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 4,
+      "sw_type": 0,
+      "sw_name": "BWA-MEM",
+      "proc_time_s": 514.52,
+      "cpu": 0.669,
+      "ram": 0.509,
+      "gpu": 0.0,
+      "disk": 0.629,
+      "priority": 0.769,
+      "arrival_time_s": 150.84,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 5,
+      "sw_type": 0,
+      "sw_name": "BWA-MEM",
+      "proc_time_s": 395.22,
+      "cpu": 0.711,
+      "ram": 0.571,
+      "gpu": 0.005,
+      "disk": 0.584,
+      "priority": 0.265,
+      "arrival_time_s": 159.95,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 6,
+      "sw_type": 0,
+      "sw_name": "BWA-MEM",
+      "proc_time_s": 578.64,
+      "cpu": 0.655,
+      "ram": 0.461,
+      "gpu": 0.018,
+      "disk": 0.573,
+      "priority": 0.773,
+      "arrival_time_s": 189.24,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 7,
+      "sw_type": 1,
+      "sw_name": "SAMtools-sort",
+      "proc_time_s": 383.15,
+      "cpu": 0.462,
+      "ram": 0.288,
+      "gpu": 0.001,
+      "disk": 0.498,
+      "priority": 0.784,
+      "arrival_time_s": 211.23,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 8,
+      "sw_type": 1,
+      "sw_name": "SAMtools-sort",
+      "proc_time_s": 147.25,
+      "cpu": 0.295,
+      "ram": 0.395,
+      "gpu": 0.016,
+      "disk": 0.452,
+      "priority": 0.538,
+      "arrival_time_s": 240.38,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 9,
+      "sw_type": 1,
+      "sw_name": "SAMtools-sort",
+      "proc_time_s": 234.71,
+      "cpu": 0.181,
+      "ram": 0.401,
+      "gpu": 0.008,
+      "disk": 0.555,
+      "priority": 0.196,
+      "arrival_time_s": 245.56,
+      "rrd_prob": 0.51
+    },
+    {
+      "id": 10,
+      "sw_type": 1,
+      "sw_name": "SAMtools-sort",
+      "proc_time_s": 188.46,
+      "cpu": 0.296,
+      "ram": 0.369,
+      "gpu": 0.0,
+      "disk": 0.501,
+      "priority": 0.483,
+      "arrival_time_s": 321.84,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 11,
+      "sw_type": 1,
+      "sw_name": "SAMtools-sort",
+      "proc_time_s": 138.57,
+      "cpu": 0.332,
+      "ram": 0.41,
+      "gpu": 0.0,
+      "disk": 0.551,
+      "priority": 0.811,
+      "arrival_time_s": 335.94,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 12,
+      "sw_type": 1,
+      "sw_name": "SAMtools-sort",
+      "proc_time_s": 179.54,
+      "cpu": 0.373,
+      "ram": 0.372,
+      "gpu": 0.005,
+      "disk": 0.492,
+      "priority": 0.136,
+      "arrival_time_s": 421.66,
+      "rrd_prob": 0.406
+    },
+    {
+      "id": 13,
+      "sw_type": 1,
+      "sw_name": "SAMtools-sort",
+      "proc_time_s": 234.22,
+      "cpu": 0.244,
+      "ram": 0.397,
+      "gpu": 0.0,
+      "disk": 0.481,
+      "priority": 0.598,
+      "arrival_time_s": 430.03,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 14,
+      "sw_type": 2,
+      "sw_name": "SAMtools-idx",
+      "proc_time_s": 154.49,
+      "cpu": 0.117,
+      "ram": 0.251,
+      "gpu": 0.0,
+      "disk": 0.237,
+      "priority": 0.606,
+      "arrival_time_s": 541.84,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 15,
+      "sw_type": 2,
+      "sw_name": "SAMtools-idx",
+      "proc_time_s": 127.39,
+      "cpu": 0.101,
+      "ram": 0.096,
+      "gpu": 0.003,
+      "disk": 0.337,
+      "priority": 0.918,
+      "arrival_time_s": 542.46,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 16,
+      "sw_type": 2,
+      "sw_name": "SAMtools-idx",
+      "proc_time_s": 54.11,
+      "cpu": 0.064,
+      "ram": 0.194,
+      "gpu": 0.005,
+      "disk": 0.269,
+      "priority": 0.606,
+      "arrival_time_s": 547.89,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 17,
+      "sw_type": 2,
+      "sw_name": "SAMtools-idx",
+      "proc_time_s": 70.91,
+      "cpu": 0.105,
+      "ram": 0.298,
+      "gpu": 0.013,
+      "disk": 0.329,
+      "priority": 0.724,
+      "arrival_time_s": 582.13,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 18,
+      "sw_type": 2,
+      "sw_name": "SAMtools-idx",
+      "proc_time_s": 146.72,
+      "cpu": 0.095,
+      "ram": 0.221,
+      "gpu": 0.003,
+      "disk": 0.335,
+      "priority": 0.853,
+      "arrival_time_s": 617.78,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 19,
+      "sw_type": 2,
+      "sw_name": "SAMtools-idx",
+      "proc_time_s": 95.67,
+      "cpu": 0.153,
+      "ram": 0.219,
+      "gpu": 0.0,
+      "disk": 0.284,
+      "priority": 0.916,
+      "arrival_time_s": 619.23,
+      "rrd_prob": 0.208
+    },
+    {
+      "id": 20,
+      "sw_type": 3,
+      "sw_name": "FreeBayes",
+      "proc_time_s": 265.77,
+      "cpu": 0.551,
+      "ram": 0.477,
+      "gpu": 0.029,
+      "disk": 0.414,
+      "priority": 0.119,
+      "arrival_time_s": 624.14,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 21,
+      "sw_type": 3,
+      "sw_name": "FreeBayes",
+      "proc_time_s": 365.3,
+      "cpu": 0.566,
+      "ram": 0.458,
+      "gpu": 0.019,
+      "disk": 0.4,
+      "priority": 0.845,
+      "arrival_time_s": 641.12,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 22,
+      "sw_type": 3,
+      "sw_name": "FreeBayes",
+      "proc_time_s": 360.22,
+      "cpu": 0.621,
+      "ram": 0.35,
+      "gpu": 0.032,
+      "disk": 0.277,
+      "priority": 0.275,
+      "arrival_time_s": 663.19,
+      "rrd_prob": 0.318
+    },
+    {
+      "id": 23,
+      "sw_type": 3,
+      "sw_name": "FreeBayes",
+      "proc_time_s": 517.03,
+      "cpu": 0.578,
+      "ram": 0.457,
+      "gpu": 0.023,
+      "disk": 0.305,
+      "priority": 0.737,
+      "arrival_time_s": 714.5,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 24,
+      "sw_type": 3,
+      "sw_name": "FreeBayes",
+      "proc_time_s": 534.54,
+      "cpu": 0.559,
+      "ram": 0.475,
+      "gpu": 0.0,
+      "disk": 0.396,
+      "priority": 0.385,
+      "arrival_time_s": 721.02,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 25,
+      "sw_type": 3,
+      "sw_name": "FreeBayes",
+      "proc_time_s": 226.09,
+      "cpu": 0.68,
+      "ram": 0.47,
+      "gpu": 0.0,
+      "disk": 0.322,
+      "priority": 0.782,
+      "arrival_time_s": 792.68,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 26,
+      "sw_type": 4,
+      "sw_name": "GATK-HC",
+      "proc_time_s": 225.78,
+      "cpu": 0.568,
+      "ram": 0.573,
+      "gpu": 0.014,
+      "disk": 0.43,
+      "priority": 0.305,
+      "arrival_time_s": 793.86,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 27,
+      "sw_type": 4,
+      "sw_name": "GATK-HC",
+      "proc_time_s": 428.44,
+      "cpu": 0.657,
+      "ram": 0.416,
+      "gpu": 0.057,
+      "disk": 0.386,
+      "priority": 0.461,
+      "arrival_time_s": 830.18,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 28,
+      "sw_type": 4,
+      "sw_name": "GATK-HC",
+      "proc_time_s": 303.27,
+      "cpu": 0.689,
+      "ram": 0.542,
+      "gpu": 0.05,
+      "disk": 0.337,
+      "priority": 0.469,
+      "arrival_time_s": 884.96,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 29,
+      "sw_type": 4,
+      "sw_name": "GATK-HC",
+      "proc_time_s": 232.94,
+      "cpu": 0.653,
+      "ram": 0.45,
+      "gpu": 0.041,
+      "disk": 0.438,
+      "priority": 0.795,
+      "arrival_time_s": 887.87,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 30,
+      "sw_type": 4,
+      "sw_name": "GATK-HC",
+      "proc_time_s": 294.05,
+      "cpu": 0.657,
+      "ram": 0.534,
+      "gpu": 0.067,
+      "disk": 0.393,
+      "priority": 0.621,
+      "arrival_time_s": 911.78,
+      "rrd_prob": 0.213
+    },
+    {
+      "id": 31,
+      "sw_type": 4,
+      "sw_name": "GATK-HC",
+      "proc_time_s": 407.02,
+      "cpu": 0.619,
+      "ram": 0.558,
+      "gpu": 0.04,
+      "disk": 0.409,
+      "priority": 0.506,
+      "arrival_time_s": 982.69,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 32,
+      "sw_type": 5,
+      "sw_name": "bcftools",
+      "proc_time_s": 103.68,
+      "cpu": 0.241,
+      "ram": 0.114,
+      "gpu": 0.001,
+      "disk": 0.156,
+      "priority": 0.948,
+      "arrival_time_s": 999.9,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 33,
+      "sw_type": 5,
+      "sw_name": "bcftools",
+      "proc_time_s": 98.09,
+      "cpu": 0.215,
+      "ram": 0.335,
+      "gpu": 0.0,
+      "disk": 0.311,
+      "priority": 0.114,
+      "arrival_time_s": 1072.48,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 34,
+      "sw_type": 5,
+      "sw_name": "bcftools",
+      "proc_time_s": 134.96,
+      "cpu": 0.225,
+      "ram": 0.233,
+      "gpu": 0.021,
+      "disk": 0.34,
+      "priority": 0.416,
+      "arrival_time_s": 1144.92,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 35,
+      "sw_type": 5,
+      "sw_name": "bcftools",
+      "proc_time_s": 108.14,
+      "cpu": 0.203,
+      "ram": 0.283,
+      "gpu": 0.0,
+      "disk": 0.188,
+      "priority": 0.824,
+      "arrival_time_s": 1177.94,
+      "rrd_prob": 0.246
+    },
+    {
+      "id": 36,
+      "sw_type": 5,
+      "sw_name": "bcftools",
+      "proc_time_s": 141.08,
+      "cpu": 0.145,
+      "ram": 0.243,
+      "gpu": 0.0,
+      "disk": 0.181,
+      "priority": 0.862,
+      "arrival_time_s": 1203.17,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 37,
+      "sw_type": 5,
+      "sw_name": "bcftools",
+      "proc_time_s": 79.39,
+      "cpu": 0.222,
+      "ram": 0.281,
+      "gpu": 0.0,
+      "disk": 0.308,
+      "priority": 0.136,
+      "arrival_time_s": 1230.73,
+      "rrd_prob": 0.442
+    },
+    {
+      "id": 38,
+      "sw_type": 6,
+      "sw_name": "FastQC",
+      "proc_time_s": 125.64,
+      "cpu": 0.25,
+      "ram": 0.166,
+      "gpu": 0.0,
+      "disk": 0.219,
+      "priority": 0.662,
+      "arrival_time_s": 1236.16,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 39,
+      "sw_type": 6,
+      "sw_name": "FastQC",
+      "proc_time_s": 163.7,
+      "cpu": 0.231,
+      "ram": 0.251,
+      "gpu": 0.014,
+      "disk": 0.129,
+      "priority": 0.489,
+      "arrival_time_s": 1263.53,
+      "rrd_prob": 0.493
+    },
+    {
+      "id": 40,
+      "sw_type": 6,
+      "sw_name": "FastQC",
+      "proc_time_s": 94.95,
+      "cpu": 0.197,
+      "ram": 0.14,
+      "gpu": 0.027,
+      "disk": 0.302,
+      "priority": 0.422,
+      "arrival_time_s": 1266.92,
+      "rrd_prob": 0.456
+    },
+    {
+      "id": 41,
+      "sw_type": 6,
+      "sw_name": "FastQC",
+      "proc_time_s": 130.85,
+      "cpu": 0.257,
+      "ram": 0.222,
+      "gpu": 0.0,
+      "disk": 0.214,
+      "priority": 0.294,
+      "arrival_time_s": 1308.65,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 42,
+      "sw_type": 6,
+      "sw_name": "FastQC",
+      "proc_time_s": 93.88,
+      "cpu": 0.24,
+      "ram": 0.13,
+      "gpu": 0.01,
+      "disk": 0.279,
+      "priority": 0.939,
+      "arrival_time_s": 1310.25,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 43,
+      "sw_type": 6,
+      "sw_name": "FastQC",
+      "proc_time_s": 157.13,
+      "cpu": 0.264,
+      "ram": 0.224,
+      "gpu": 0.03,
+      "disk": 0.217,
+      "priority": 0.418,
+      "arrival_time_s": 1320.09,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 44,
+      "sw_type": 7,
+      "sw_name": "MultiQC",
+      "proc_time_s": 167.27,
+      "cpu": 0.142,
+      "ram": 0.311,
+      "gpu": 0.0,
+      "disk": 0.237,
+      "priority": 0.49,
+      "arrival_time_s": 1355.07,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 45,
+      "sw_type": 7,
+      "sw_name": "MultiQC",
+      "proc_time_s": 116.12,
+      "cpu": 0.103,
+      "ram": 0.274,
+      "gpu": 0.0,
+      "disk": 0.186,
+      "priority": 0.723,
+      "arrival_time_s": 1356.87,
+      "rrd_prob": 0.519
+    },
+    {
+      "id": 46,
+      "sw_type": 7,
+      "sw_name": "MultiQC",
+      "proc_time_s": 303.92,
+      "cpu": 0.11,
+      "ram": 0.348,
+      "gpu": 0.016,
+      "disk": 0.136,
+      "priority": 0.848,
+      "arrival_time_s": 1381.89,
+      "rrd_prob": 0.304
+    },
+    {
+      "id": 47,
+      "sw_type": 7,
+      "sw_name": "MultiQC",
+      "proc_time_s": 229.9,
+      "cpu": 0.059,
+      "ram": 0.3,
+      "gpu": 0.0,
+      "disk": 0.168,
+      "priority": 0.725,
+      "arrival_time_s": 1411.72,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 48,
+      "sw_type": 7,
+      "sw_name": "MultiQC",
+      "proc_time_s": 128.83,
+      "cpu": 0.14,
+      "ram": 0.315,
+      "gpu": 0.0,
+      "disk": 0.078,
+      "priority": 0.362,
+      "arrival_time_s": 1432.02,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 49,
+      "sw_type": 7,
+      "sw_name": "MultiQC",
+      "proc_time_s": 272.38,
+      "cpu": 0.068,
+      "ram": 0.274,
+      "gpu": 0.005,
+      "disk": 0.238,
+      "priority": 0.341,
+      "arrival_time_s": 1470.53,
+      "rrd_prob": 0.33
+    }
+  ],
+  "edges": [
+    [
+      0,
+      7
+    ],
+    [
+      1,
+      11
+    ],
+    [
+      1,
+      12
+    ],
+    [
+      1,
+      13
+    ],
+    [
+      1,
+      18
+    ],
+    [
+      2,
+      8
+    ],
+    [
+      2,
+      9
+    ],
+    [
+      2,
+      10
+    ],
+    [
+      3,
+      10
+    ],
+    [
+      5,
+      13
+    ],
+    [
+      5,
+      37
+    ],
+    [
+      5,
+      48
+    ],
+    [
+      7,
+      17
+    ],
+    [
+      8,
+      19
+    ],
+    [
+      9,
+      14
+    ],
+    [
+      9,
+      18
+    ],
+    [
+      10,
+      18
+    ],
+    [
+      12,
+      15
+    ],
+    [
+      12,
+      16
+    ],
+    [
+      14,
+      31
+    ],
+    [
+      15,
+      20
+    ],
+    [
+      16,
+      20
+    ],
+    [
+      16,
+      21
+    ],
+    [
+      16,
+      28
+    ],
+    [
+      17,
+      22
+    ],
+    [
+      17,
+      23
+    ],
+    [
+      18,
+      22
+    ],
+    [
+      18,
+      25
+    ],
+    [
+      18,
+      43
+    ],
+    [
+      19,
+      24
+    ],
+    [
+      19,
+      37
+    ],
+    [
+      19,
+      41
+    ],
+    [
+      20,
+      27
+    ],
+    [
+      20,
+      31
+    ],
+    [
+      21,
+      27
+    ],
+    [
+      21,
+      47
+    ],
+    [
+      22,
+      31
+    ],
+    [
+      23,
+      26
+    ],
+    [
+      23,
+      27
+    ],
+    [
+      23,
+      31
+    ],
+    [
+      24,
+      27
+    ],
+    [
+      24,
+      30
+    ],
+    [
+      25,
+      28
+    ],
+    [
+      25,
+      29
+    ],
+    [
+      25,
+      31
+    ],
+    [
+      25,
+      49
+    ],
+    [
+      26,
+      32
+    ],
+    [
+      26,
+      43
+    ],
+    [
+      27,
+      43
+    ],
+    [
+      28,
+      32
+    ],
+    [
+      28,
+      35
+    ],
+    [
+      29,
+      32
+    ],
+    [
+      29,
+      33
+    ],
+    [
+      29,
+      34
+    ],
+    [
+      29,
+      37
+    ],
+    [
+      30,
+      36
+    ],
+    [
+      31,
+      35
+    ],
+    [
+      31,
+      38
+    ],
+    [
+      31,
+      45
+    ],
+    [
+      32,
+      39
+    ],
+    [
+      32,
+      40
+    ],
+    [
+      34,
+      42
+    ],
+    [
+      34,
+      43
+    ],
+    [
+      35,
+      42
+    ],
+    [
+      35,
+      43
+    ],
+    [
+      36,
+      38
+    ],
+    [
+      37,
+      40
+    ],
+    [
+      37,
+      41
+    ],
+    [
+      37,
+      43
+    ],
+    [
+      38,
+      44
+    ],
+    [
+      39,
+      45
+    ],
+    [
+      40,
+      47
+    ],
+    [
+      40,
+      49
+    ],
+    [
+      41,
+      48
+    ],
+    [
+      43,
+      46
+    ],
+    [
+      43,
+      48
+    ]
+  ]
+}

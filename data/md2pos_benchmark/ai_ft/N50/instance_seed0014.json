@@ -1,0 +1,867 @@
+{
+  "metadata": {
+    "domain": "ai_ft",
+    "N": 50,
+    "seed": 14,
+    "num_sw": 8,
+    "software_names": [
+      "DataIngest",
+      "Preprocess",
+      "FineTune-GPU",
+      "Evaluate",
+      "Checkpoint",
+      "ABTest",
+      "Package",
+      "Monitor"
+    ],
+    "dag_type": "multi_stage",
+    "p_rrd": 0.45,
+    "n_edges": 48
+  },
+  "tasks": [
+    {
+      "id": 0,
+      "sw_type": 0,
+      "sw_name": "DataIngest",
+      "proc_time_s": 226.64,
+      "cpu": 0.257,
+      "ram": 0.424,
+      "gpu": 0.0,
+      "disk": 0.501,
+      "priority": 0.354,
+      "arrival_time_s": 0.37,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 1,
+      "sw_type": 3,
+      "sw_name": "Evaluate",
+      "proc_time_s": 242.1,
+      "cpu": 0.464,
+      "ram": 0.476,
+      "gpu": 0.782,
+      "disk": 0.424,
+      "priority": 0.761,
+      "arrival_time_s": 42.64,
+      "rrd_prob": 0.376
+    },
+    {
+      "id": 2,
+      "sw_type": 2,
+      "sw_name": "FineTune-GPU",
+      "proc_time_s": 289.22,
+      "cpu": 0.28,
+      "ram": 0.707,
+      "gpu": 0.982,
+      "disk": 0.656,
+      "priority": 0.387,
+      "arrival_time_s": 49.05,
+      "rrd_prob": 0.451
+    },
+    {
+      "id": 3,
+      "sw_type": 1,
+      "sw_name": "Preprocess",
+      "proc_time_s": 462.86,
+      "cpu": 0.567,
+      "ram": 0.666,
+      "gpu": 0.113,
+      "disk": 0.421,
+      "priority": 0.1,
+      "arrival_time_s": 108.83,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 4,
+      "sw_type": 1,
+      "sw_name": "Preprocess",
+      "proc_time_s": 189.8,
+      "cpu": 0.628,
+      "ram": 0.757,
+      "gpu": 0.066,
+      "disk": 0.404,
+      "priority": 0.1,
+      "arrival_time_s": 128.81,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 5,
+      "sw_type": 0,
+      "sw_name": "DataIngest",
+      "proc_time_s": 216.23,
+      "cpu": 0.399,
+      "ram": 0.413,
+      "gpu": 0.0,
+      "disk": 0.518,
+      "priority": 0.413,
+      "arrival_time_s": 203.24,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 6,
+      "sw_type": 6,
+      "sw_name": "Package",
+      "proc_time_s": 212.05,
+      "cpu": 0.324,
+      "ram": 0.203,
+      "gpu": 0.017,
+      "disk": 0.417,
+      "priority": 1.0,
+      "arrival_time_s": 210.98,
+      "rrd_prob": 0.335
+    },
+    {
+      "id": 7,
+      "sw_type": 1,
+      "sw_name": "Preprocess",
+      "proc_time_s": 225.69,
+      "cpu": 0.681,
+      "ram": 0.726,
+      "gpu": 0.088,
+      "disk": 0.361,
+      "priority": 1.0,
+      "arrival_time_s": 284.56,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 8,
+      "sw_type": 7,
+      "sw_name": "Monitor",
+      "proc_time_s": 94.14,
+      "cpu": 0.12,
+      "ram": 0.195,
+      "gpu": 0.015,
+      "disk": 0.105,
+      "priority": 1.0,
+      "arrival_time_s": 292.47,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 9,
+      "sw_type": 2,
+      "sw_name": "FineTune-GPU",
+      "proc_time_s": 517.4,
+      "cpu": 0.181,
+      "ram": 0.586,
+      "gpu": 0.974,
+      "disk": 0.58,
+      "priority": 0.546,
+      "arrival_time_s": 327.64,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 10,
+      "sw_type": 2,
+      "sw_name": "FineTune-GPU",
+      "proc_time_s": 689.66,
+      "cpu": 0.2,
+      "ram": 0.722,
+      "gpu": 0.947,
+      "disk": 0.516,
+      "priority": 0.1,
+      "arrival_time_s": 341.21,
+      "rrd_prob": 0.336
+    },
+    {
+      "id": 11,
+      "sw_type": 6,
+      "sw_name": "Package",
+      "proc_time_s": 80.81,
+      "cpu": 0.279,
+      "ram": 0.313,
+      "gpu": 0.013,
+      "disk": 0.445,
+      "priority": 1.0,
+      "arrival_time_s": 358.38,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 12,
+      "sw_type": 7,
+      "sw_name": "Monitor",
+      "proc_time_s": 50.74,
+      "cpu": 0.154,
+      "ram": 0.227,
+      "gpu": 0.0,
+      "disk": 0.076,
+      "priority": 0.363,
+      "arrival_time_s": 384.32,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 13,
+      "sw_type": 2,
+      "sw_name": "FineTune-GPU",
+      "proc_time_s": 554.35,
+      "cpu": 0.253,
+      "ram": 0.676,
+      "gpu": 0.95,
+      "disk": 0.635,
+      "priority": 0.207,
+      "arrival_time_s": 436.42,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 14,
+      "sw_type": 6,
+      "sw_name": "Package",
+      "proc_time_s": 200.9,
+      "cpu": 0.311,
+      "ram": 0.289,
+      "gpu": 0.0,
+      "disk": 0.343,
+      "priority": 0.136,
+      "arrival_time_s": 490.96,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 15,
+      "sw_type": 4,
+      "sw_name": "Checkpoint",
+      "proc_time_s": 97.65,
+      "cpu": 0.142,
+      "ram": 0.346,
+      "gpu": 0.072,
+      "disk": 0.609,
+      "priority": 0.102,
+      "arrival_time_s": 494.17,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 16,
+      "sw_type": 0,
+      "sw_name": "DataIngest",
+      "proc_time_s": 131.29,
+      "cpu": 0.285,
+      "ram": 0.415,
+      "gpu": 0.002,
+      "disk": 0.467,
+      "priority": 0.758,
+      "arrival_time_s": 564.28,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 17,
+      "sw_type": 1,
+      "sw_name": "Preprocess",
+      "proc_time_s": 293.85,
+      "cpu": 0.629,
+      "ram": 0.671,
+      "gpu": 0.081,
+      "disk": 0.313,
+      "priority": 0.209,
+      "arrival_time_s": 568.69,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 18,
+      "sw_type": 1,
+      "sw_name": "Preprocess",
+      "proc_time_s": 175.91,
+      "cpu": 0.605,
+      "ram": 0.613,
+      "gpu": 0.117,
+      "disk": 0.438,
+      "priority": 0.228,
+      "arrival_time_s": 569.24,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 19,
+      "sw_type": 3,
+      "sw_name": "Evaluate",
+      "proc_time_s": 285.02,
+      "cpu": 0.348,
+      "ram": 0.524,
+      "gpu": 0.844,
+      "disk": 0.258,
+      "priority": 0.525,
+      "arrival_time_s": 595.07,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 20,
+      "sw_type": 6,
+      "sw_name": "Package",
+      "proc_time_s": 124.65,
+      "cpu": 0.223,
+      "ram": 0.282,
+      "gpu": 0.034,
+      "disk": 0.48,
+      "priority": 0.114,
+      "arrival_time_s": 599.87,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 21,
+      "sw_type": 0,
+      "sw_name": "DataIngest",
+      "proc_time_s": 162.13,
+      "cpu": 0.257,
+      "ram": 0.423,
+      "gpu": 0.0,
+      "disk": 0.525,
+      "priority": 1.0,
+      "arrival_time_s": 623.87,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 22,
+      "sw_type": 3,
+      "sw_name": "Evaluate",
+      "proc_time_s": 288.53,
+      "cpu": 0.436,
+      "ram": 0.583,
+      "gpu": 0.814,
+      "disk": 0.244,
+      "priority": 0.351,
+      "arrival_time_s": 631.96,
+      "rrd_prob": 0.393
+    },
+    {
+      "id": 23,
+      "sw_type": 1,
+      "sw_name": "Preprocess",
+      "proc_time_s": 200.91,
+      "cpu": 0.653,
+      "ram": 0.617,
+      "gpu": 0.117,
+      "disk": 0.261,
+      "priority": 0.1,
+      "arrival_time_s": 638.59,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 24,
+      "sw_type": 2,
+      "sw_name": "FineTune-GPU",
+      "proc_time_s": 444.71,
+      "cpu": 0.184,
+      "ram": 0.745,
+      "gpu": 0.96,
+      "disk": 0.566,
+      "priority": 0.692,
+      "arrival_time_s": 651.8,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 25,
+      "sw_type": 6,
+      "sw_name": "Package",
+      "proc_time_s": 162.0,
+      "cpu": 0.256,
+      "ram": 0.259,
+      "gpu": 0.0,
+      "disk": 0.453,
+      "priority": 1.0,
+      "arrival_time_s": 666.4,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 26,
+      "sw_type": 3,
+      "sw_name": "Evaluate",
+      "proc_time_s": 135.91,
+      "cpu": 0.307,
+      "ram": 0.606,
+      "gpu": 0.772,
+      "disk": 0.326,
+      "priority": 0.635,
+      "arrival_time_s": 677.04,
+      "rrd_prob": 0.456
+    },
+    {
+      "id": 27,
+      "sw_type": 1,
+      "sw_name": "Preprocess",
+      "proc_time_s": 213.67,
+      "cpu": 0.581,
+      "ram": 0.594,
+      "gpu": 0.107,
+      "disk": 0.413,
+      "priority": 0.1,
+      "arrival_time_s": 712.15,
+      "rrd_prob": 0.455
+    },
+    {
+      "id": 28,
+      "sw_type": 7,
+      "sw_name": "Monitor",
+      "proc_time_s": 99.74,
+      "cpu": 0.08,
+      "ram": 0.153,
+      "gpu": 0.011,
+      "disk": 0.185,
+      "priority": 0.117,
+      "arrival_time_s": 727.04,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 29,
+      "sw_type": 7,
+      "sw_name": "Monitor",
+      "proc_time_s": 122.49,
+      "cpu": 0.067,
+      "ram": 0.148,
+      "gpu": 0.0,
+      "disk": 0.066,
+      "priority": 0.534,
+      "arrival_time_s": 731.42,
+      "rrd_prob": 0.205
+    },
+    {
+      "id": 30,
+      "sw_type": 0,
+      "sw_name": "DataIngest",
+      "proc_time_s": 137.79,
+      "cpu": 0.135,
+      "ram": 0.43,
+      "gpu": 0.006,
+      "disk": 0.575,
+      "priority": 0.485,
+      "arrival_time_s": 750.69,
+      "rrd_prob": 0.599
+    },
+    {
+      "id": 31,
+      "sw_type": 4,
+      "sw_name": "Checkpoint",
+      "proc_time_s": 120.1,
+      "cpu": 0.111,
+      "ram": 0.43,
+      "gpu": 0.139,
+      "disk": 0.722,
+      "priority": 0.148,
+      "arrival_time_s": 824.69,
+      "rrd_prob": 0.383
+    },
+    {
+      "id": 32,
+      "sw_type": 0,
+      "sw_name": "DataIngest",
+      "proc_time_s": 173.73,
+      "cpu": 0.288,
+      "ram": 0.405,
+      "gpu": 0.0,
+      "disk": 0.472,
+      "priority": 0.224,
+      "arrival_time_s": 833.39,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 33,
+      "sw_type": 0,
+      "sw_name": "DataIngest",
+      "proc_time_s": 187.56,
+      "cpu": 0.314,
+      "ram": 0.476,
+      "gpu": 0.0,
+      "disk": 0.472,
+      "priority": 1.0,
+      "arrival_time_s": 843.5,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 34,
+      "sw_type": 2,
+      "sw_name": "FineTune-GPU",
+      "proc_time_s": 305.39,
+      "cpu": 0.262,
+      "ram": 0.75,
+      "gpu": 0.96,
+      "disk": 0.658,
+      "priority": 0.1,
+      "arrival_time_s": 854.65,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 35,
+      "sw_type": 2,
+      "sw_name": "FineTune-GPU",
+      "proc_time_s": 403.66,
+      "cpu": 0.179,
+      "ram": 0.737,
+      "gpu": 0.923,
+      "disk": 0.583,
+      "priority": 1.0,
+      "arrival_time_s": 929.9,
+      "rrd_prob": 0.441
+    },
+    {
+      "id": 36,
+      "sw_type": 6,
+      "sw_name": "Package",
+      "proc_time_s": 112.64,
+      "cpu": 0.284,
+      "ram": 0.244,
+      "gpu": 0.0,
+      "disk": 0.325,
+      "priority": 0.259,
+      "arrival_time_s": 950.54,
+      "rrd_prob": 0.579
+    },
+    {
+      "id": 37,
+      "sw_type": 7,
+      "sw_name": "Monitor",
+      "proc_time_s": 76.27,
+      "cpu": 0.18,
+      "ram": 0.236,
+      "gpu": 0.0,
+      "disk": 0.05,
+      "priority": 0.445,
+      "arrival_time_s": 988.86,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 38,
+      "sw_type": 5,
+      "sw_name": "ABTest",
+      "proc_time_s": 88.78,
+      "cpu": 0.353,
+      "ram": 0.304,
+      "gpu": 0.0,
+      "disk": 0.194,
+      "priority": 0.1,
+      "arrival_time_s": 998.21,
+      "rrd_prob": 0.232
+    },
+    {
+      "id": 39,
+      "sw_type": 6,
+      "sw_name": "Package",
+      "proc_time_s": 165.73,
+      "cpu": 0.156,
+      "ram": 0.279,
+      "gpu": 0.0,
+      "disk": 0.467,
+      "priority": 0.305,
+      "arrival_time_s": 1031.98,
+      "rrd_prob": 0.213
+    },
+    {
+      "id": 40,
+      "sw_type": 7,
+      "sw_name": "Monitor",
+      "proc_time_s": 113.53,
+      "cpu": 0.168,
+      "ram": 0.195,
+      "gpu": 0.043,
+      "disk": 0.093,
+      "priority": 0.127,
+      "arrival_time_s": 1048.0,
+      "rrd_prob": 0.428
+    },
+    {
+      "id": 41,
+      "sw_type": 1,
+      "sw_name": "Preprocess",
+      "proc_time_s": 157.51,
+      "cpu": 0.615,
+      "ram": 0.681,
+      "gpu": 0.098,
+      "disk": 0.5,
+      "priority": 0.971,
+      "arrival_time_s": 1090.83,
+      "rrd_prob": 0.468
+    },
+    {
+      "id": 42,
+      "sw_type": 0,
+      "sw_name": "DataIngest",
+      "proc_time_s": 80.72,
+      "cpu": 0.355,
+      "ram": 0.433,
+      "gpu": 0.0,
+      "disk": 0.516,
+      "priority": 0.1,
+      "arrival_time_s": 1096.97,
+      "rrd_prob": 0.449
+    },
+    {
+      "id": 43,
+      "sw_type": 2,
+      "sw_name": "FineTune-GPU",
+      "proc_time_s": 471.42,
+      "cpu": 0.129,
+      "ram": 0.746,
+      "gpu": 0.977,
+      "disk": 0.603,
+      "priority": 0.913,
+      "arrival_time_s": 1113.09,
+      "rrd_prob": 0.299
+    },
+    {
+      "id": 44,
+      "sw_type": 6,
+      "sw_name": "Package",
+      "proc_time_s": 166.7,
+      "cpu": 0.279,
+      "ram": 0.351,
+      "gpu": 0.0,
+      "disk": 0.471,
+      "priority": 0.563,
+      "arrival_time_s": 1114.87,
+      "rrd_prob": 0.57
+    },
+    {
+      "id": 45,
+      "sw_type": 5,
+      "sw_name": "ABTest",
+      "proc_time_s": 113.66,
+      "cpu": 0.269,
+      "ram": 0.279,
+      "gpu": 0.025,
+      "disk": 0.131,
+      "priority": 0.208,
+      "arrival_time_s": 1120.74,
+      "rrd_prob": 0.459
+    },
+    {
+      "id": 46,
+      "sw_type": 1,
+      "sw_name": "Preprocess",
+      "proc_time_s": 194.39,
+      "cpu": 0.619,
+      "ram": 0.754,
+      "gpu": 0.112,
+      "disk": 0.355,
+      "priority": 1.0,
+      "arrival_time_s": 1121.24,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 47,
+      "sw_type": 2,
+      "sw_name": "FineTune-GPU",
+      "proc_time_s": 486.63,
+      "cpu": 0.189,
+      "ram": 0.611,
+      "gpu": 0.945,
+      "disk": 0.608,
+      "priority": 0.879,
+      "arrival_time_s": 1121.54,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 48,
+      "sw_type": 4,
+      "sw_name": "Checkpoint",
+      "proc_time_s": 95.66,
+      "cpu": 0.224,
+      "ram": 0.385,
+      "gpu": 0.105,
+      "disk": 0.673,
+      "priority": 0.204,
+      "arrival_time_s": 1199.46,
+      "rrd_prob": 0.427
+    },
+    {
+      "id": 49,
+      "sw_type": 5,
+      "sw_name": "ABTest",
+      "proc_time_s": 142.81,
+      "cpu": 0.35,
+      "ram": 0.366,
+      "gpu": 0.056,
+      "disk": 0.192,
+      "priority": 0.321,
+      "arrival_time_s": 1217.09,
+      "rrd_prob": 0.0
+    }
+  ],
+  "edges": [
+    [
+      0,
+      6
+    ],
+    [
+      1,
+      12
+    ],
+    [
+      2,
+      11
+    ],
+    [
+      3,
+      19
+    ],
+    [
+      3,
+      26
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      4,
+      47
+    ],
+    [
+      5,
+      8
+    ],
+    [
+      5,
+      10
+    ],
+    [
+      5,
+      18
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      7,
+      34
+    ],
+    [
+      8,
+      48
+    ],
+    [
+      9,
+      29
+    ],
+    [
+      9,
+      39
+    ],
+    [
+      10,
+      12
+    ],
+    [
+      10,
+      47
+    ],
+    [
+      10,
+      48
+    ],
+    [
+      11,
+      29
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      14,
+      29
+    ],
+    [
+      15,
+      29
+    ],
+    [
+      16,
+      17
+    ],
+    [
+      17,
+      22
+    ],
+    [
+      18,
+      26
+    ],
+    [
+      21,
+      37
+    ],
+    [
+      22,
+      29
+    ],
+    [
+      23,
+      37
+    ],
+    [
+      24,
+      37
+    ],
+    [
+      25,
+      42
+    ],
+    [
+      26,
+      49
+    ],
+    [
+      27,
+      31
+    ],
+    [
+      27,
+      49
+    ],
+    [
+      30,
+      34
+    ],
+    [
+      30,
+      35
+    ],
+    [
+      31,
+      35
+    ],
+    [
+      31,
+      38
+    ],
+    [
+      32,
+      34
+    ],
+    [
+      33,
+      35
+    ],
+    [
+      35,
+      48
+    ],
+    [
+      35,
+      49
+    ],
+    [
+      37,
+      47
+    ],
+    [
+      39,
+      41
+    ],
+    [
+      41,
+      44
+    ],
+    [
+      42,
+      44
+    ],
+    [
+      44,
+      47
+    ],
+    [
+      44,
+      49
+    ],
+    [
+      46,
+      48
+    ]
+  ]
+}

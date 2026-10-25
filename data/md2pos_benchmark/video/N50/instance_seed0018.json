@@ -1,0 +1,995 @@
+{
+  "metadata": {
+    "domain": "video",
+    "N": 50,
+    "seed": 18,
+    "num_sw": 8,
+    "software_names": [
+      "Decode",
+      "SceneDetect",
+      "Encode-4K",
+      "Encode-1080p",
+      "Encode-720p",
+      "Package-HLS",
+      "Package-DASH",
+      "Thumbnail"
+    ],
+    "dag_type": "pipeline_fanout",
+    "p_rrd": 0.35,
+    "n_edges": 80
+  },
+  "tasks": [
+    {
+      "id": 0,
+      "sw_type": 0,
+      "sw_name": "Decode",
+      "proc_time_s": 293.69,
+      "cpu": 0.334,
+      "ram": 0.307,
+      "gpu": 0.112,
+      "disk": 0.694,
+      "priority": 0.8,
+      "arrival_time_s": 25.28,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 1,
+      "sw_type": 0,
+      "sw_name": "Decode",
+      "proc_time_s": 202.83,
+      "cpu": 0.403,
+      "ram": 0.43,
+      "gpu": 0.091,
+      "disk": 0.721,
+      "priority": 0.4,
+      "arrival_time_s": 81.59,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 2,
+      "sw_type": 0,
+      "sw_name": "Decode",
+      "proc_time_s": 243.81,
+      "cpu": 0.443,
+      "ram": 0.349,
+      "gpu": 0.104,
+      "disk": 0.805,
+      "priority": 0.6,
+      "arrival_time_s": 153.93,
+      "rrd_prob": 0.524
+    },
+    {
+      "id": 3,
+      "sw_type": 0,
+      "sw_name": "Decode",
+      "proc_time_s": 191.61,
+      "cpu": 0.315,
+      "ram": 0.339,
+      "gpu": 0.09,
+      "disk": 0.705,
+      "priority": 0.8,
+      "arrival_time_s": 179.91,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 4,
+      "sw_type": 0,
+      "sw_name": "Decode",
+      "proc_time_s": 148.45,
+      "cpu": 0.444,
+      "ram": 0.339,
+      "gpu": 0.101,
+      "disk": 0.746,
+      "priority": 0.8,
+      "arrival_time_s": 213.56,
+      "rrd_prob": 0.412
+    },
+    {
+      "id": 5,
+      "sw_type": 0,
+      "sw_name": "Decode",
+      "proc_time_s": 237.97,
+      "cpu": 0.385,
+      "ram": 0.312,
+      "gpu": 0.132,
+      "disk": 0.668,
+      "priority": 0.4,
+      "arrival_time_s": 254.73,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 6,
+      "sw_type": 0,
+      "sw_name": "Decode",
+      "proc_time_s": 170.64,
+      "cpu": 0.392,
+      "ram": 0.289,
+      "gpu": 0.12,
+      "disk": 0.697,
+      "priority": 0.2,
+      "arrival_time_s": 275.52,
+      "rrd_prob": 0.245
+    },
+    {
+      "id": 7,
+      "sw_type": 1,
+      "sw_name": "SceneDetect",
+      "proc_time_s": 57.12,
+      "cpu": 0.292,
+      "ram": 0.199,
+      "gpu": 0.005,
+      "disk": 0.255,
+      "priority": 0.2,
+      "arrival_time_s": 349.76,
+      "rrd_prob": 0.406
+    },
+    {
+      "id": 8,
+      "sw_type": 1,
+      "sw_name": "SceneDetect",
+      "proc_time_s": 105.55,
+      "cpu": 0.256,
+      "ram": 0.196,
+      "gpu": 0.0,
+      "disk": 0.216,
+      "priority": 0.4,
+      "arrival_time_s": 379.58,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 9,
+      "sw_type": 1,
+      "sw_name": "SceneDetect",
+      "proc_time_s": 134.12,
+      "cpu": 0.216,
+      "ram": 0.104,
+      "gpu": 0.0,
+      "disk": 0.159,
+      "priority": 1.0,
+      "arrival_time_s": 456.21,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 10,
+      "sw_type": 1,
+      "sw_name": "SceneDetect",
+      "proc_time_s": 78.54,
+      "cpu": 0.21,
+      "ram": 0.253,
+      "gpu": 0.0,
+      "disk": 0.181,
+      "priority": 0.4,
+      "arrival_time_s": 456.3,
+      "rrd_prob": 0.375
+    },
+    {
+      "id": 11,
+      "sw_type": 1,
+      "sw_name": "SceneDetect",
+      "proc_time_s": 69.69,
+      "cpu": 0.186,
+      "ram": 0.237,
+      "gpu": 0.0,
+      "disk": 0.229,
+      "priority": 0.2,
+      "arrival_time_s": 476.02,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 12,
+      "sw_type": 1,
+      "sw_name": "SceneDetect",
+      "proc_time_s": 102.57,
+      "cpu": 0.211,
+      "ram": 0.332,
+      "gpu": 0.0,
+      "disk": 0.2,
+      "priority": 0.8,
+      "arrival_time_s": 500.98,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 13,
+      "sw_type": 1,
+      "sw_name": "SceneDetect",
+      "proc_time_s": 88.27,
+      "cpu": 0.277,
+      "ram": 0.267,
+      "gpu": 0.017,
+      "disk": 0.322,
+      "priority": 0.8,
+      "arrival_time_s": 522.19,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 14,
+      "sw_type": 2,
+      "sw_name": "Encode-4K",
+      "proc_time_s": 260.05,
+      "cpu": 0.233,
+      "ram": 0.424,
+      "gpu": 0.88,
+      "disk": 0.625,
+      "priority": 0.8,
+      "arrival_time_s": 523.48,
+      "rrd_prob": 0.263
+    },
+    {
+      "id": 15,
+      "sw_type": 2,
+      "sw_name": "Encode-4K",
+      "proc_time_s": 241.6,
+      "cpu": 0.235,
+      "ram": 0.393,
+      "gpu": 0.885,
+      "disk": 0.61,
+      "priority": 0.8,
+      "arrival_time_s": 524.1,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 16,
+      "sw_type": 2,
+      "sw_name": "Encode-4K",
+      "proc_time_s": 384.5,
+      "cpu": 0.256,
+      "ram": 0.371,
+      "gpu": 0.87,
+      "disk": 0.613,
+      "priority": 0.2,
+      "arrival_time_s": 542.66,
+      "rrd_prob": 0.502
+    },
+    {
+      "id": 17,
+      "sw_type": 2,
+      "sw_name": "Encode-4K",
+      "proc_time_s": 455.94,
+      "cpu": 0.272,
+      "ram": 0.392,
+      "gpu": 0.854,
+      "disk": 0.688,
+      "priority": 0.6,
+      "arrival_time_s": 562.73,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 18,
+      "sw_type": 2,
+      "sw_name": "Encode-4K",
+      "proc_time_s": 241.95,
+      "cpu": 0.283,
+      "ram": 0.431,
+      "gpu": 0.836,
+      "disk": 0.645,
+      "priority": 0.4,
+      "arrival_time_s": 600.22,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 19,
+      "sw_type": 2,
+      "sw_name": "Encode-4K",
+      "proc_time_s": 302.77,
+      "cpu": 0.312,
+      "ram": 0.434,
+      "gpu": 0.868,
+      "disk": 0.567,
+      "priority": 0.4,
+      "arrival_time_s": 667.26,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 20,
+      "sw_type": 3,
+      "sw_name": "Encode-1080p",
+      "proc_time_s": 322.94,
+      "cpu": 0.8,
+      "ram": 0.483,
+      "gpu": 0.102,
+      "disk": 0.627,
+      "priority": 0.4,
+      "arrival_time_s": 687.12,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 21,
+      "sw_type": 3,
+      "sw_name": "Encode-1080p",
+      "proc_time_s": 463.33,
+      "cpu": 0.886,
+      "ram": 0.571,
+      "gpu": 0.115,
+      "disk": 0.56,
+      "priority": 0.8,
+      "arrival_time_s": 723.54,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 22,
+      "sw_type": 3,
+      "sw_name": "Encode-1080p",
+      "proc_time_s": 323.09,
+      "cpu": 0.859,
+      "ram": 0.556,
+      "gpu": 0.066,
+      "disk": 0.508,
+      "priority": 0.4,
+      "arrival_time_s": 747.17,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 23,
+      "sw_type": 3,
+      "sw_name": "Encode-1080p",
+      "proc_time_s": 327.29,
+      "cpu": 0.797,
+      "ram": 0.625,
+      "gpu": 0.089,
+      "disk": 0.579,
+      "priority": 0.8,
+      "arrival_time_s": 796.12,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 24,
+      "sw_type": 3,
+      "sw_name": "Encode-1080p",
+      "proc_time_s": 308.39,
+      "cpu": 0.818,
+      "ram": 0.549,
+      "gpu": 0.108,
+      "disk": 0.665,
+      "priority": 0.4,
+      "arrival_time_s": 808.81,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 25,
+      "sw_type": 3,
+      "sw_name": "Encode-1080p",
+      "proc_time_s": 266.03,
+      "cpu": 0.76,
+      "ram": 0.586,
+      "gpu": 0.074,
+      "disk": 0.507,
+      "priority": 0.6,
+      "arrival_time_s": 817.02,
+      "rrd_prob": 0.24
+    },
+    {
+      "id": 26,
+      "sw_type": 4,
+      "sw_name": "Encode-720p",
+      "proc_time_s": 178.85,
+      "cpu": 0.757,
+      "ram": 0.466,
+      "gpu": 0.076,
+      "disk": 0.45,
+      "priority": 0.4,
+      "arrival_time_s": 839.98,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 27,
+      "sw_type": 4,
+      "sw_name": "Encode-720p",
+      "proc_time_s": 204.49,
+      "cpu": 0.602,
+      "ram": 0.483,
+      "gpu": 0.059,
+      "disk": 0.494,
+      "priority": 0.6,
+      "arrival_time_s": 853.47,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 28,
+      "sw_type": 4,
+      "sw_name": "Encode-720p",
+      "proc_time_s": 188.91,
+      "cpu": 0.728,
+      "ram": 0.454,
+      "gpu": 0.04,
+      "disk": 0.402,
+      "priority": 0.8,
+      "arrival_time_s": 904.52,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 29,
+      "sw_type": 4,
+      "sw_name": "Encode-720p",
+      "proc_time_s": 281.23,
+      "cpu": 0.734,
+      "ram": 0.45,
+      "gpu": 0.11,
+      "disk": 0.516,
+      "priority": 0.4,
+      "arrival_time_s": 938.47,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 30,
+      "sw_type": 4,
+      "sw_name": "Encode-720p",
+      "proc_time_s": 301.52,
+      "cpu": 0.674,
+      "ram": 0.437,
+      "gpu": 0.069,
+      "disk": 0.476,
+      "priority": 0.8,
+      "arrival_time_s": 952.21,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 31,
+      "sw_type": 4,
+      "sw_name": "Encode-720p",
+      "proc_time_s": 257.44,
+      "cpu": 0.681,
+      "ram": 0.328,
+      "gpu": 0.004,
+      "disk": 0.469,
+      "priority": 0.2,
+      "arrival_time_s": 976.31,
+      "rrd_prob": 0.52
+    },
+    {
+      "id": 32,
+      "sw_type": 5,
+      "sw_name": "Package-HLS",
+      "proc_time_s": 81.7,
+      "cpu": 0.364,
+      "ram": 0.303,
+      "gpu": 0.0,
+      "disk": 0.442,
+      "priority": 0.4,
+      "arrival_time_s": 1005.43,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 33,
+      "sw_type": 5,
+      "sw_name": "Package-HLS",
+      "proc_time_s": 84.61,
+      "cpu": 0.398,
+      "ram": 0.262,
+      "gpu": 0.002,
+      "disk": 0.315,
+      "priority": 0.6,
+      "arrival_time_s": 1053.78,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 34,
+      "sw_type": 5,
+      "sw_name": "Package-HLS",
+      "proc_time_s": 190.66,
+      "cpu": 0.34,
+      "ram": 0.261,
+      "gpu": 0.0,
+      "disk": 0.398,
+      "priority": 1.0,
+      "arrival_time_s": 1134.25,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 35,
+      "sw_type": 5,
+      "sw_name": "Package-HLS",
+      "proc_time_s": 122.11,
+      "cpu": 0.348,
+      "ram": 0.357,
+      "gpu": 0.016,
+      "disk": 0.463,
+      "priority": 0.6,
+      "arrival_time_s": 1192.58,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 36,
+      "sw_type": 5,
+      "sw_name": "Package-HLS",
+      "proc_time_s": 131.5,
+      "cpu": 0.291,
+      "ram": 0.237,
+      "gpu": 0.043,
+      "disk": 0.35,
+      "priority": 1.0,
+      "arrival_time_s": 1214.49,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 37,
+      "sw_type": 5,
+      "sw_name": "Package-HLS",
+      "proc_time_s": 110.0,
+      "cpu": 0.398,
+      "ram": 0.2,
+      "gpu": 0.002,
+      "disk": 0.416,
+      "priority": 0.6,
+      "arrival_time_s": 1220.65,
+      "rrd_prob": 0.366
+    },
+    {
+      "id": 38,
+      "sw_type": 6,
+      "sw_name": "Package-DASH",
+      "proc_time_s": 162.53,
+      "cpu": 0.286,
+      "ram": 0.247,
+      "gpu": 0.0,
+      "disk": 0.376,
+      "priority": 0.2,
+      "arrival_time_s": 1240.54,
+      "rrd_prob": 0.41
+    },
+    {
+      "id": 39,
+      "sw_type": 6,
+      "sw_name": "Package-DASH",
+      "proc_time_s": 101.0,
+      "cpu": 0.367,
+      "ram": 0.227,
+      "gpu": 0.027,
+      "disk": 0.406,
+      "priority": 1.0,
+      "arrival_time_s": 1269.42,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 40,
+      "sw_type": 6,
+      "sw_name": "Package-DASH",
+      "proc_time_s": 253.72,
+      "cpu": 0.363,
+      "ram": 0.29,
+      "gpu": 0.004,
+      "disk": 0.465,
+      "priority": 0.2,
+      "arrival_time_s": 1273.55,
+      "rrd_prob": 0.458
+    },
+    {
+      "id": 41,
+      "sw_type": 6,
+      "sw_name": "Package-DASH",
+      "proc_time_s": 116.18,
+      "cpu": 0.329,
+      "ram": 0.334,
+      "gpu": 0.0,
+      "disk": 0.402,
+      "priority": 0.6,
+      "arrival_time_s": 1297.57,
+      "rrd_prob": 0.459
+    },
+    {
+      "id": 42,
+      "sw_type": 6,
+      "sw_name": "Package-DASH",
+      "proc_time_s": 119.56,
+      "cpu": 0.35,
+      "ram": 0.316,
+      "gpu": 0.015,
+      "disk": 0.373,
+      "priority": 0.4,
+      "arrival_time_s": 1317.17,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 43,
+      "sw_type": 6,
+      "sw_name": "Package-DASH",
+      "proc_time_s": 97.98,
+      "cpu": 0.313,
+      "ram": 0.302,
+      "gpu": 0.0,
+      "disk": 0.412,
+      "priority": 0.6,
+      "arrival_time_s": 1343.39,
+      "rrd_prob": 0.385
+    },
+    {
+      "id": 44,
+      "sw_type": 7,
+      "sw_name": "Thumbnail",
+      "proc_time_s": 68.07,
+      "cpu": 0.257,
+      "ram": 0.191,
+      "gpu": 0.029,
+      "disk": 0.272,
+      "priority": 0.2,
+      "arrival_time_s": 1346.21,
+      "rrd_prob": 0.376
+    },
+    {
+      "id": 45,
+      "sw_type": 7,
+      "sw_name": "Thumbnail",
+      "proc_time_s": 80.37,
+      "cpu": 0.11,
+      "ram": 0.226,
+      "gpu": 0.006,
+      "disk": 0.171,
+      "priority": 0.2,
+      "arrival_time_s": 1353.8,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 46,
+      "sw_type": 7,
+      "sw_name": "Thumbnail",
+      "proc_time_s": 50.06,
+      "cpu": 0.234,
+      "ram": 0.159,
+      "gpu": 0.002,
+      "disk": 0.205,
+      "priority": 0.2,
+      "arrival_time_s": 1356.88,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 47,
+      "sw_type": 7,
+      "sw_name": "Thumbnail",
+      "proc_time_s": 83.53,
+      "cpu": 0.211,
+      "ram": 0.111,
+      "gpu": 0.028,
+      "disk": 0.146,
+      "priority": 0.2,
+      "arrival_time_s": 1357.34,
+      "rrd_prob": 0.487
+    },
+    {
+      "id": 48,
+      "sw_type": 7,
+      "sw_name": "Thumbnail",
+      "proc_time_s": 58.7,
+      "cpu": 0.281,
+      "ram": 0.081,
+      "gpu": 0.022,
+      "disk": 0.096,
+      "priority": 0.2,
+      "arrival_time_s": 1370.14,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 49,
+      "sw_type": 7,
+      "sw_name": "Thumbnail",
+      "proc_time_s": 81.46,
+      "cpu": 0.241,
+      "ram": 0.183,
+      "gpu": 0.001,
+      "disk": 0.138,
+      "priority": 0.2,
+      "arrival_time_s": 1469.53,
+      "rrd_prob": 0.0
+    }
+  ],
+  "edges": [
+    [
+      0,
+      7
+    ],
+    [
+      0,
+      12
+    ],
+    [
+      0,
+      47
+    ],
+    [
+      1,
+      8
+    ],
+    [
+      2,
+      7
+    ],
+    [
+      2,
+      11
+    ],
+    [
+      3,
+      9
+    ],
+    [
+      3,
+      12
+    ],
+    [
+      3,
+      13
+    ],
+    [
+      4,
+      7
+    ],
+    [
+      4,
+      9
+    ],
+    [
+      4,
+      13
+    ],
+    [
+      5,
+      10
+    ],
+    [
+      8,
+      16
+    ],
+    [
+      9,
+      15
+    ],
+    [
+      9,
+      18
+    ],
+    [
+      9,
+      19
+    ],
+    [
+      9,
+      30
+    ],
+    [
+      10,
+      17
+    ],
+    [
+      12,
+      14
+    ],
+    [
+      12,
+      29
+    ],
+    [
+      12,
+      30
+    ],
+    [
+      13,
+      16
+    ],
+    [
+      13,
+      18
+    ],
+    [
+      13,
+      32
+    ],
+    [
+      14,
+      22
+    ],
+    [
+      14,
+      25
+    ],
+    [
+      14,
+      31
+    ],
+    [
+      15,
+      23
+    ],
+    [
+      15,
+      24
+    ],
+    [
+      15,
+      25
+    ],
+    [
+      17,
+      24
+    ],
+    [
+      17,
+      25
+    ],
+    [
+      18,
+      20
+    ],
+    [
+      19,
+      21
+    ],
+    [
+      20,
+      28
+    ],
+    [
+      21,
+      28
+    ],
+    [
+      21,
+      29
+    ],
+    [
+      21,
+      31
+    ],
+    [
+      22,
+      26
+    ],
+    [
+      23,
+      26
+    ],
+    [
+      23,
+      27
+    ],
+    [
+      23,
+      48
+    ],
+    [
+      24,
+      30
+    ],
+    [
+      25,
+      26
+    ],
+    [
+      25,
+      30
+    ],
+    [
+      26,
+      33
+    ],
+    [
+      27,
+      35
+    ],
+    [
+      27,
+      42
+    ],
+    [
+      28,
+      34
+    ],
+    [
+      28,
+      36
+    ],
+    [
+      28,
+      37
+    ],
+    [
+      29,
+      33
+    ],
+    [
+      30,
+      32
+    ],
+    [
+      30,
+      33
+    ],
+    [
+      30,
+      39
+    ],
+    [
+      32,
+      48
+    ],
+    [
+      33,
+      39
+    ],
+    [
+      33,
+      43
+    ],
+    [
+      34,
+      38
+    ],
+    [
+      34,
+      40
+    ],
+    [
+      34,
+      42
+    ],
+    [
+      34,
+      45
+    ],
+    [
+      35,
+      41
+    ],
+    [
+      35,
+      46
+    ],
+    [
+      36,
+      38
+    ],
+    [
+      36,
+      40
+    ],
+    [
+      36,
+      41
+    ],
+    [
+      36,
+      42
+    ],
+    [
+      37,
+      40
+    ],
+    [
+      37,
+      48
+    ],
+    [
+      39,
+      44
+    ],
+    [
+      39,
+      46
+    ],
+    [
+      39,
+      47
+    ],
+    [
+      39,
+      49
+    ],
+    [
+      41,
+      46
+    ],
+    [
+      41,
+      48
+    ],
+    [
+      42,
+      46
+    ],
+    [
+      43,
+      45
+    ],
+    [
+      43,
+      46
+    ]
+  ]
+}

@@ -1,0 +1,1135 @@
+{
+  "metadata": {
+    "domain": "financial",
+    "N": 50,
+    "seed": 14,
+    "num_sw": 8,
+    "software_names": [
+      "MarketData",
+      "PositionLoad",
+      "RiskFactors",
+      "VaR-MC",
+      "StressTest",
+      "Aggregation",
+      "Reporting",
+      "Audit"
+    ],
+    "dag_type": "pipeline_parallel",
+    "p_rrd": 0.3,
+    "n_edges": 115
+  },
+  "tasks": [
+    {
+      "id": 0,
+      "sw_type": 3,
+      "sw_name": "VaR-MC",
+      "proc_time_s": 409.82,
+      "cpu": 0.908,
+      "ram": 0.817,
+      "gpu": 0.293,
+      "disk": 0.216,
+      "priority": 0.733,
+      "arrival_time_s": 3.23,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 1,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 293.3,
+      "cpu": 0.9,
+      "ram": 0.704,
+      "gpu": 0.235,
+      "disk": 0.338,
+      "priority": 0.6,
+      "arrival_time_s": 4.22,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 2,
+      "sw_type": 3,
+      "sw_name": "VaR-MC",
+      "proc_time_s": 698.89,
+      "cpu": 0.898,
+      "ram": 0.774,
+      "gpu": 0.262,
+      "disk": 0.262,
+      "priority": 0.6,
+      "arrival_time_s": 6.54,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 3,
+      "sw_type": 5,
+      "sw_name": "Aggregation",
+      "proc_time_s": 228.09,
+      "cpu": 0.595,
+      "ram": 0.531,
+      "gpu": 0.0,
+      "disk": 0.284,
+      "priority": 0.6,
+      "arrival_time_s": 35.81,
+      "rrd_prob": 0.294
+    },
+    {
+      "id": 4,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 351.67,
+      "cpu": 0.785,
+      "ram": 0.646,
+      "gpu": 0.248,
+      "disk": 0.242,
+      "priority": 0.333,
+      "arrival_time_s": 60.45,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 5,
+      "sw_type": 2,
+      "sw_name": "RiskFactors",
+      "proc_time_s": 266.32,
+      "cpu": 0.838,
+      "ram": 0.634,
+      "gpu": 0.042,
+      "disk": 0.321,
+      "priority": 0.467,
+      "arrival_time_s": 84.82,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 6,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 251.05,
+      "cpu": 0.861,
+      "ram": 0.681,
+      "gpu": 0.229,
+      "disk": 0.381,
+      "priority": 0.333,
+      "arrival_time_s": 84.96,
+      "rrd_prob": 0.213
+    },
+    {
+      "id": 7,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 376.39,
+      "cpu": 0.859,
+      "ram": 0.785,
+      "gpu": 0.266,
+      "disk": 0.328,
+      "priority": 0.6,
+      "arrival_time_s": 85.62,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 8,
+      "sw_type": 6,
+      "sw_name": "Reporting",
+      "proc_time_s": 143.76,
+      "cpu": 0.39,
+      "ram": 0.345,
+      "gpu": 0.019,
+      "disk": 0.658,
+      "priority": 0.867,
+      "arrival_time_s": 119.42,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 9,
+      "sw_type": 2,
+      "sw_name": "RiskFactors",
+      "proc_time_s": 206.7,
+      "cpu": 0.908,
+      "ram": 0.588,
+      "gpu": 0.019,
+      "disk": 0.229,
+      "priority": 0.467,
+      "arrival_time_s": 125.25,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 10,
+      "sw_type": 3,
+      "sw_name": "VaR-MC",
+      "proc_time_s": 500.97,
+      "cpu": 0.927,
+      "ram": 0.839,
+      "gpu": 0.28,
+      "disk": 0.326,
+      "priority": 0.6,
+      "arrival_time_s": 145.28,
+      "rrd_prob": 0.232
+    },
+    {
+      "id": 11,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 353.81,
+      "cpu": 0.967,
+      "ram": 0.643,
+      "gpu": 0.248,
+      "disk": 0.3,
+      "priority": 0.6,
+      "arrival_time_s": 165.37,
+      "rrd_prob": 0.28
+    },
+    {
+      "id": 12,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 340.01,
+      "cpu": 0.871,
+      "ram": 0.742,
+      "gpu": 0.249,
+      "disk": 0.311,
+      "priority": 0.333,
+      "arrival_time_s": 188.66,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 13,
+      "sw_type": 3,
+      "sw_name": "VaR-MC",
+      "proc_time_s": 327.94,
+      "cpu": 0.903,
+      "ram": 0.819,
+      "gpu": 0.279,
+      "disk": 0.193,
+      "priority": 0.6,
+      "arrival_time_s": 209.04,
+      "rrd_prob": 0.486
+    },
+    {
+      "id": 14,
+      "sw_type": 6,
+      "sw_name": "Reporting",
+      "proc_time_s": 169.67,
+      "cpu": 0.255,
+      "ram": 0.336,
+      "gpu": 0.0,
+      "disk": 0.62,
+      "priority": 0.333,
+      "arrival_time_s": 247.37,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 15,
+      "sw_type": 6,
+      "sw_name": "Reporting",
+      "proc_time_s": 156.26,
+      "cpu": 0.273,
+      "ram": 0.372,
+      "gpu": 0.0,
+      "disk": 0.677,
+      "priority": 0.867,
+      "arrival_time_s": 249.7,
+      "rrd_prob": 0.538
+    },
+    {
+      "id": 16,
+      "sw_type": 5,
+      "sw_name": "Aggregation",
+      "proc_time_s": 187.43,
+      "cpu": 0.444,
+      "ram": 0.51,
+      "gpu": 0.031,
+      "disk": 0.348,
+      "priority": 0.467,
+      "arrival_time_s": 250.47,
+      "rrd_prob": 0.387
+    },
+    {
+      "id": 17,
+      "sw_type": 6,
+      "sw_name": "Reporting",
+      "proc_time_s": 218.52,
+      "cpu": 0.273,
+      "ram": 0.314,
+      "gpu": 0.0,
+      "disk": 0.609,
+      "priority": 0.467,
+      "arrival_time_s": 257.48,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 18,
+      "sw_type": 0,
+      "sw_name": "MarketData",
+      "proc_time_s": 86.37,
+      "cpu": 0.222,
+      "ram": 0.207,
+      "gpu": 0.012,
+      "disk": 0.343,
+      "priority": 0.733,
+      "arrival_time_s": 360.43,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 19,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 263.99,
+      "cpu": 0.847,
+      "ram": 0.699,
+      "gpu": 0.271,
+      "disk": 0.252,
+      "priority": 0.467,
+      "arrival_time_s": 382.04,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 20,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 335.93,
+      "cpu": 0.862,
+      "ram": 0.639,
+      "gpu": 0.214,
+      "disk": 0.254,
+      "priority": 0.6,
+      "arrival_time_s": 385.76,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 21,
+      "sw_type": 5,
+      "sw_name": "Aggregation",
+      "proc_time_s": 325.01,
+      "cpu": 0.474,
+      "ram": 0.538,
+      "gpu": 0.0,
+      "disk": 0.37,
+      "priority": 0.6,
+      "arrival_time_s": 432.83,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 22,
+      "sw_type": 6,
+      "sw_name": "Reporting",
+      "proc_time_s": 227.78,
+      "cpu": 0.266,
+      "ram": 0.303,
+      "gpu": 0.02,
+      "disk": 0.641,
+      "priority": 0.6,
+      "arrival_time_s": 449.41,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 23,
+      "sw_type": 0,
+      "sw_name": "MarketData",
+      "proc_time_s": 60.67,
+      "cpu": 0.325,
+      "ram": 0.254,
+      "gpu": 0.001,
+      "disk": 0.279,
+      "priority": 0.467,
+      "arrival_time_s": 464.16,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 24,
+      "sw_type": 5,
+      "sw_name": "Aggregation",
+      "proc_time_s": 244.66,
+      "cpu": 0.521,
+      "ram": 0.497,
+      "gpu": 0.0,
+      "disk": 0.36,
+      "priority": 0.467,
+      "arrival_time_s": 476.77,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 25,
+      "sw_type": 6,
+      "sw_name": "Reporting",
+      "proc_time_s": 136.3,
+      "cpu": 0.229,
+      "ram": 0.428,
+      "gpu": 0.028,
+      "disk": 0.618,
+      "priority": 0.467,
+      "arrival_time_s": 486.13,
+      "rrd_prob": 0.23
+    },
+    {
+      "id": 26,
+      "sw_type": 3,
+      "sw_name": "VaR-MC",
+      "proc_time_s": 538.54,
+      "cpu": 0.834,
+      "ram": 0.729,
+      "gpu": 0.348,
+      "disk": 0.294,
+      "priority": 0.467,
+      "arrival_time_s": 506.1,
+      "rrd_prob": 0.2
+    },
+    {
+      "id": 27,
+      "sw_type": 0,
+      "sw_name": "MarketData",
+      "proc_time_s": 75.21,
+      "cpu": 0.115,
+      "ram": 0.259,
+      "gpu": 0.005,
+      "disk": 0.279,
+      "priority": 0.6,
+      "arrival_time_s": 510.78,
+      "rrd_prob": 0.268
+    },
+    {
+      "id": 28,
+      "sw_type": 3,
+      "sw_name": "VaR-MC",
+      "proc_time_s": 587.35,
+      "cpu": 0.944,
+      "ram": 0.768,
+      "gpu": 0.298,
+      "disk": 0.297,
+      "priority": 0.467,
+      "arrival_time_s": 517.69,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 29,
+      "sw_type": 0,
+      "sw_name": "MarketData",
+      "proc_time_s": 81.82,
+      "cpu": 0.171,
+      "ram": 0.227,
+      "gpu": 0.0,
+      "disk": 0.385,
+      "priority": 0.467,
+      "arrival_time_s": 555.23,
+      "rrd_prob": 0.355
+    },
+    {
+      "id": 30,
+      "sw_type": 2,
+      "sw_name": "RiskFactors",
+      "proc_time_s": 178.38,
+      "cpu": 0.875,
+      "ram": 0.606,
+      "gpu": 0.047,
+      "disk": 0.181,
+      "priority": 0.333,
+      "arrival_time_s": 659.46,
+      "rrd_prob": 0.528
+    },
+    {
+      "id": 31,
+      "sw_type": 2,
+      "sw_name": "RiskFactors",
+      "proc_time_s": 196.27,
+      "cpu": 0.782,
+      "ram": 0.659,
+      "gpu": 0.043,
+      "disk": 0.21,
+      "priority": 0.6,
+      "arrival_time_s": 771.01,
+      "rrd_prob": 0.26
+    },
+    {
+      "id": 32,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 392.25,
+      "cpu": 0.878,
+      "ram": 0.733,
+      "gpu": 0.259,
+      "disk": 0.393,
+      "priority": 0.467,
+      "arrival_time_s": 775.4,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 33,
+      "sw_type": 0,
+      "sw_name": "MarketData",
+      "proc_time_s": 106.22,
+      "cpu": 0.233,
+      "ram": 0.282,
+      "gpu": 0.0,
+      "disk": 0.201,
+      "priority": 0.467,
+      "arrival_time_s": 793.52,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 34,
+      "sw_type": 6,
+      "sw_name": "Reporting",
+      "proc_time_s": 151.37,
+      "cpu": 0.289,
+      "ram": 0.359,
+      "gpu": 0.0,
+      "disk": 0.57,
+      "priority": 0.6,
+      "arrival_time_s": 834.04,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 35,
+      "sw_type": 2,
+      "sw_name": "RiskFactors",
+      "proc_time_s": 172.7,
+      "cpu": 0.879,
+      "ram": 0.588,
+      "gpu": 0.051,
+      "disk": 0.187,
+      "priority": 1.0,
+      "arrival_time_s": 837.89,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 36,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 386.88,
+      "cpu": 0.866,
+      "ram": 0.758,
+      "gpu": 0.253,
+      "disk": 0.266,
+      "priority": 0.333,
+      "arrival_time_s": 894.39,
+      "rrd_prob": 0.514
+    },
+    {
+      "id": 37,
+      "sw_type": 1,
+      "sw_name": "PositionLoad",
+      "proc_time_s": 176.6,
+      "cpu": 0.37,
+      "ram": 0.5,
+      "gpu": 0.008,
+      "disk": 0.381,
+      "priority": 0.6,
+      "arrival_time_s": 903.75,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 38,
+      "sw_type": 2,
+      "sw_name": "RiskFactors",
+      "proc_time_s": 394.28,
+      "cpu": 0.831,
+      "ram": 0.639,
+      "gpu": 0.062,
+      "disk": 0.169,
+      "priority": 0.733,
+      "arrival_time_s": 920.57,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 39,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 216.09,
+      "cpu": 0.869,
+      "ram": 0.756,
+      "gpu": 0.27,
+      "disk": 0.255,
+      "priority": 0.467,
+      "arrival_time_s": 964.86,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 40,
+      "sw_type": 2,
+      "sw_name": "RiskFactors",
+      "proc_time_s": 278.25,
+      "cpu": 0.875,
+      "ram": 0.645,
+      "gpu": 0.014,
+      "disk": 0.261,
+      "priority": 0.333,
+      "arrival_time_s": 983.56,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 41,
+      "sw_type": 2,
+      "sw_name": "RiskFactors",
+      "proc_time_s": 216.69,
+      "cpu": 0.768,
+      "ram": 0.56,
+      "gpu": 0.067,
+      "disk": 0.094,
+      "priority": 0.333,
+      "arrival_time_s": 1033.37,
+      "rrd_prob": 0.501
+    },
+    {
+      "id": 42,
+      "sw_type": 6,
+      "sw_name": "Reporting",
+      "proc_time_s": 209.35,
+      "cpu": 0.255,
+      "ram": 0.41,
+      "gpu": 0.02,
+      "disk": 0.548,
+      "priority": 0.467,
+      "arrival_time_s": 1038.71,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 43,
+      "sw_type": 6,
+      "sw_name": "Reporting",
+      "proc_time_s": 137.11,
+      "cpu": 0.314,
+      "ram": 0.357,
+      "gpu": 0.0,
+      "disk": 0.544,
+      "priority": 0.333,
+      "arrival_time_s": 1081.11,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 44,
+      "sw_type": 4,
+      "sw_name": "StressTest",
+      "proc_time_s": 379.33,
+      "cpu": 0.796,
+      "ram": 0.688,
+      "gpu": 0.249,
+      "disk": 0.212,
+      "priority": 0.6,
+      "arrival_time_s": 1238.9,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 45,
+      "sw_type": 7,
+      "sw_name": "Audit",
+      "proc_time_s": 103.16,
+      "cpu": 0.095,
+      "ram": 0.1,
+      "gpu": 0.007,
+      "disk": 0.557,
+      "priority": 0.333,
+      "arrival_time_s": 1276.83,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 46,
+      "sw_type": 7,
+      "sw_name": "Audit",
+      "proc_time_s": 97.44,
+      "cpu": 0.161,
+      "ram": 0.242,
+      "gpu": 0.004,
+      "disk": 0.431,
+      "priority": 0.333,
+      "arrival_time_s": 1318.48,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 47,
+      "sw_type": 7,
+      "sw_name": "Audit",
+      "proc_time_s": 106.43,
+      "cpu": 0.091,
+      "ram": 0.153,
+      "gpu": 0.004,
+      "disk": 0.507,
+      "priority": 0.333,
+      "arrival_time_s": 1334.48,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 48,
+      "sw_type": 7,
+      "sw_name": "Audit",
+      "proc_time_s": 111.64,
+      "cpu": 0.113,
+      "ram": 0.115,
+      "gpu": 0.0,
+      "disk": 0.495,
+      "priority": 0.2,
+      "arrival_time_s": 1339.77,
+      "rrd_prob": 0.0
+    },
+    {
+      "id": 49,
+      "sw_type": 7,
+      "sw_name": "Audit",
+      "proc_time_s": 128.54,
+      "cpu": 0.05,
+      "ram": 0.143,
+      "gpu": 0.018,
+      "disk": 0.494,
+      "priority": 0.2,
+      "arrival_time_s": 1393.92,
+      "rrd_prob": 0.0
+    }
+  ],
+  "edges": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      45
+    ],
+    [
+      0,
+      46
+    ],
+    [
+      0,
+      47
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      48
+    ],
+    [
+      1,
+      49
+    ],
+    [
+      2,
+      12
+    ],
+    [
+      2,
+      45
+    ],
+    [
+      2,
+      46
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      3,
+      46
+    ],
+    [
+      3,
+      49
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      5,
+      46
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      7,
+      46
+    ],
+    [
+      7,
+      47
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      8,
+      45
+    ],
+    [
+      8,
+      46
+    ],
+    [
+      8,
+      47
+    ],
+    [
+      8,
+      48
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      9,
+      45
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      10,
+      45
+    ],
+    [
+      10,
+      48
+    ],
+    [
+      11,
+      16
+    ],
+    [
+      11,
+      45
+    ],
+    [
+      11,
+      49
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      13,
+      45
+    ],
+    [
+      13,
+      48
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      15,
+      17
+    ],
+    [
+      15,
+      46
+    ],
+    [
+      15,
+      47
+    ],
+    [
+      15,
+      48
+    ],
+    [
+      15,
+      49
+    ],
+    [
+      16,
+      22
+    ],
+    [
+      16,
+      48
+    ],
+    [
+      17,
+      18
+    ],
+    [
+      17,
+      46
+    ],
+    [
+      18,
+      19
+    ],
+    [
+      18,
+      45
+    ],
+    [
+      18,
+      46
+    ],
+    [
+      18,
+      48
+    ],
+    [
+      19,
+      20
+    ],
+    [
+      19,
+      46
+    ],
+    [
+      20,
+      21
+    ],
+    [
+      20,
+      45
+    ],
+    [
+      20,
+      48
+    ],
+    [
+      21,
+      31
+    ],
+    [
+      21,
+      46
+    ],
+    [
+      21,
+      48
+    ],
+    [
+      22,
+      23
+    ],
+    [
+      22,
+      48
+    ],
+    [
+      22,
+      49
+    ],
+    [
+      23,
+      24
+    ],
+    [
+      23,
+      47
+    ],
+    [
+      24,
+      25
+    ],
+    [
+      24,
+      45
+    ],
+    [
+      25,
+      26
+    ],
+    [
+      25,
+      48
+    ],
+    [
+      26,
+      27
+    ],
+    [
+      26,
+      48
+    ],
+    [
+      27,
+      28
+    ],
+    [
+      27,
+      47
+    ],
+    [
+      27,
+      48
+    ],
+    [
+      28,
+      29
+    ],
+    [
+      28,
+      49
+    ],
+    [
+      29,
+      30
+    ],
+    [
+      29,
+      48
+    ],
+    [
+      30,
+      33
+    ],
+    [
+      31,
+      32
+    ],
+    [
+      31,
+      46
+    ],
+    [
+      31,
+      49
+    ],
+    [
+      32,
+      36
+    ],
+    [
+      32,
+      45
+    ],
+    [
+      33,
+      34
+    ],
+    [
+      33,
+      47
+    ],
+    [
+      34,
+      35
+    ],
+    [
+      34,
+      45
+    ],
+    [
+      34,
+      47
+    ],
+    [
+      35,
+      37
+    ],
+    [
+      35,
+      45
+    ],
+    [
+      35,
+      46
+    ],
+    [
+      35,
+      47
+    ],
+    [
+      35,
+      48
+    ],
+    [
+      35,
+      49
+    ],
+    [
+      36,
+      38
+    ],
+    [
+      37,
+      39
+    ],
+    [
+      37,
+      46
+    ],
+    [
+      37,
+      48
+    ],
+    [
+      38,
+      41
+    ],
+    [
+      38,
+      46
+    ],
+    [
+      38,
+      48
+    ],
+    [
+      38,
+      49
+    ],
+    [
+      39,
+      40
+    ],
+    [
+      39,
+      46
+    ],
+    [
+      40,
+      44
+    ],
+    [
+      41,
+      42
+    ],
+    [
+      42,
+      43
+    ],
+    [
+      42,
+      49
+    ],
+    [
+      43,
+      46
+    ],
+    [
+      44,
+      45
+    ],
+    [
+      44,
+      46
+    ],
+    [
+      44,
+      48
+    ],
+    [
+      45,
+      48
+    ],
+    [
+      46,
+      47
+    ],
+    [
+      47,
+      49
+    ]
+  ]
+}
