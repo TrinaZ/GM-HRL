@@ -48,6 +48,7 @@ class RewardConfig:
     eta1: float = 1.0
     eta2: float = 0.1   # goal consistency (Sim)
     eta3: float = 0.1   # fragmentation
+    w5: float = 0.0     # response-time shaping (0 = off, the setting of the main experiments)
 
 
 @dataclass
@@ -75,16 +76,17 @@ class AgentConfig:
 
 
 def _snap(sim: MD2POSSim):
-    return (sim.t, sim.work_done, sim.util_int.copy(), sim.sla_viol, sim.idle_int)
+    return (sim.t, sim.work_done, sim.util_int.copy(), sim.sla_viol, sim.idle_int, sim.flow_int)
 
 
 def _base_reward(sim: MD2POSSim, s0, rc: RewardConfig) -> float:
-    t0, w0, u0, v0, i0 = s0
+    t0, w0, u0, v0, i0, f0 = s0
     prog = (sim.work_done - w0) / sim.w_ref - (sim.t - t0) / sim.lb_ref
     util = float(np.mean((sim.util_int - u0) / sim.cap)) / sim.lb_ref
     sla = (sim.sla_viol - v0) / sim.N0
     idle = (sim.idle_int - i0) / sim.lb_ref
-    return rc.w1 * prog + rc.w2 * util - rc.kappa * rc.w3 * sla - rc.w4 * idle
+    resp = (sim.flow_int - f0) / (sim.N0 * sim.p_mean_ref)
+    return rc.w1 * prog + rc.w2 * util - rc.kappa * rc.w3 * sla - rc.w4 * idle - rc.w5 * resp
 
 
 def _frag(sim: MD2POSSim) -> float:

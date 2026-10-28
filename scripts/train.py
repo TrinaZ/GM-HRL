@@ -62,6 +62,7 @@ def parse():
     p.add_argument("--kappa", type=float, default=1.0)
     p.add_argument("--w", nargs=4, type=float, default=[1.0, 0.1, 1.0, 0.1])
     p.add_argument("--eta", nargs=3, type=float, default=[1.0, 0.1, 0.1])
+    p.add_argument("--w5", type=float, default=0.0, help="response-time shaping weight (0 = off)")
     # agent
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--d", type=int, default=64)
@@ -103,7 +104,7 @@ def main():
     acfg = AgentConfig(d=a.d, layers=a.layers, d_g=a.d_g, lr=a.lr, alt_period=a.alt_period, ent_coef=a.ent_coef,
                        meta_interval_factor=a.meta_interval_factor, device=a.device, **VARIANTS[a.variant])
     rcfg = RewardConfig(w1=a.w[0], w2=a.w[1], w3=a.w[2], w4=a.w[3], kappa=a.kappa,
-                        eta1=a.eta[0], eta2=a.eta[1], eta3=a.eta[2])
+                        eta1=a.eta[0], eta2=a.eta[1], eta3=a.eta[2], w5=a.w5)
     agent = GMHRLAgent(acfg, rcfg)
     if a.init:
         agent.net.load_state_dict(GMHRLAgent.load(a.init, a.device).net.state_dict())

@@ -120,7 +120,7 @@ def main():
             reuse[(r["domain"], int(r["N"]), int(r["k"]), int(r["seed"]))] = r
     for dom in a.domains:
         for N in a.N:
-            paths = instance_paths(a.bench, dom, N)
+            paths = {int(p.stem[-4:]): p for p in instance_paths(a.bench, dom, N)}  # k -> file (instance_seedKKKK)
             for k in a.instances:
                 inst = load_instance(paths[k])
                 sim = MD2POSSim(inst, scfg, seed=0)

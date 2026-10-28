@@ -161,6 +161,8 @@ class MD2POSSim:
         # integrals and counters (used for metrics and rewards)
         self.util_int = np.zeros(4)
         self.idle_int = 0.0
+        self.flow_int = 0.0      # integral of the number of visible, unfinished tasks (= summed response time)
+        self.n_open = 0
         self.sla_viol = 0
         self.work_done = 0.0
         self.n_done = 0
@@ -169,6 +171,7 @@ class MD2POSSim:
         self.graph_version = 0
         self.lb_ref = self.lower_bound()
         self.w_ref = float(inst.p_est.sum())
+        self.p_mean_ref = float(inst.p_est.mean())
         self._release_until(self.t)
 
     # ----------------------------------------------------------------- bounds
@@ -256,6 +259,7 @@ class MD2POSSim:
         self.util_int += used * dt
         if self.ready:
             self.idle_int += float(np.mean(self.free / self.cap)) * dt
+        self.flow_int += self.n_open * dt
         while self._dl_heap and self._dl_heap[0][0] <= t1:
             dl, i = heapq.heappop(self._dl_heap)
             if not (self.finish[i] <= dl + 1e-9):
@@ -263,6 +267,7 @@ class MD2POSSim:
 
     def _make_visible(self, i: int, t: float):
         self.graph_version += 1
+        self.n_open += 1
         self.rel[i] = min(self.rel[i], t) if np.isfinite(self.rel[i]) else t
         heapq.heappush(self._dl_heap, (self.rel[i] + self.sla, i))
         if self.npred_left[i] == 0:
@@ -281,6 +286,7 @@ class MD2POSSim:
 
     def _complete(self, i: int):
         self.running.discard(i)
+        self.n_open -= 1
         self.status[i] = DONE
         self.comp[i] = self.t
         self.free += self.dem[i]
