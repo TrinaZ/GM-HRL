@@ -92,6 +92,9 @@ def evaluate(agent, sims, seeds):
 
 def main():
     a = parse()
+    if (Path(a.out) / 'last.pt').exists():  # finished by another runner
+        print('skip: already trained', a.out); return
+
     if a.threads:
         torch.set_num_threads(a.threads)
     rng = np.random.default_rng(a.seed)

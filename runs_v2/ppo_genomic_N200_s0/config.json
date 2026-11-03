@@ -1,0 +1,101 @@
+{
+  "args": {
+    "variant": "ppo",
+    "domains": [
+      "genomic"
+    ],
+    "N": [
+      200
+    ],
+    "n_train": 100,
+    "n_val": 5,
+    "iters": 400,
+    "episodes_per_iter": 12,
+    "eval_every": 10,
+    "seed": 0,
+    "device": "cpu",
+    "threads": 2,
+    "data": "/mnt/e/ForPhD/Code/\u521b\u65b0\u70b92/GM-HRL-repo/GM-HRL/data/generated",
+    "out": "runs_v2/ppo_genomic_N200_s0",
+    "rho": 0.8,
+    "sla_factor": 4.0,
+    "rrd_mult": 1.0,
+    "cap_scale": 1.0,
+    "kappa": 1.0,
+    "w": [
+      1.0,
+      0.1,
+      1.0,
+      0.1
+    ],
+    "eta": [
+      1.0,
+      0.1,
+      0.1
+    ],
+    "w5": 0.0,
+    "lr": 0.0003,
+    "d": 64,
+    "layers": 2,
+    "d_g": 8,
+    "alt_period": 5,
+    "meta_interval_factor": 2.0,
+    "init": null,
+    "bc_iters": 40,
+    "critic_warmup": 10,
+    "ent_coef": 0.02
+  },
+  "sim": {
+    "capacity": [
+      4.0,
+      4.0,
+      4.0,
+      4.0
+    ],
+    "cap_scale": 1.0,
+    "m_per_type": 4,
+    "rho": 0.8,
+    "sla_factor": 4.0,
+    "sla": null,
+    "noise_sigma": 0.3,
+    "rrd_enabled": true,
+    "rrd_mult": 1.0,
+    "rrd_max_extra": 2,
+    "allow_wait": true
+  },
+  "agent": {
+    "d": 64,
+    "layers": 2,
+    "d_g": 8,
+    "hidden": 128,
+    "use_gnn": false,
+    "hierarchical": false,
+    "dynamic_graph": true,
+    "meta_interval_factor": 2.0,
+    "lr": 0.0003,
+    "gamma_s": 0.995,
+    "gamma_m": 0.99,
+    "lam": 0.95,
+    "clip": 0.2,
+    "ent_coef": 0.02,
+    "vf_coef": 0.5,
+    "epochs": 4,
+    "minibatch": 64,
+    "max_grad_norm": 0.5,
+    "alt_period": 5,
+    "device": "cpu"
+  },
+  "reward": {
+    "w1": 1.0,
+    "w2": 0.1,
+    "w3": 1.0,
+    "w4": 0.1,
+    "kappa": 1.0,
+    "eta1": 1.0,
+    "eta2": 0.1,
+    "eta3": 0.1,
+    "w5": 0.0
+  },
+  "n_train_instances": 100,
+  "n_val_instances": 5
+}
