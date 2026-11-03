@@ -15,7 +15,7 @@ declare -A TH=([fastqc]=2 [bwa]=8 [sort]=4 [index]=2 [gatk]=4 [freebayes]=1 [bcf
 mapfile -t SAMPLES < <(tail -n +2 "$W/pilot_samples.tsv" | cut -f1 | head -n "$K")
 for s in "${SAMPLES[@]}"; do
   for st in fastqc bwa sort index gatk freebayes bcftools multiqc; do
-    grep -q "^$s	$st	" "$LOG" && continue
+    awk -F'	' -v s="$s" -v st="$st" '$1==s && $2==st && $6==0{f=1} END{exit !f}' "$LOG" && continue
     t0=$EPOCHREALTIME; echo 0 > "$OUT/.rss"
     if [ -x /usr/bin/time ]; then
       /usr/bin/time -f "%M" -o "$OUT/.rss" bash "$HERE/stage.sh" "$st" "$s" "${TH[$st]}" > "$OUT/$s.$st.log" 2>&1; rc=$?

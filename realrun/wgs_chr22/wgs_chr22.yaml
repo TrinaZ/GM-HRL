@@ -1,0 +1,93 @@
+# Real-pipeline experiment (Section 6.3): 50 samples of the 1000 Genomes
+# high-coverage set, chr22 only, on one workstation (24 threads, 15 GB RAM).
+# Durations (est_seconds) are the means of the 5 pilot samples (pilot_times.tsv),
+# run one stage at a time with the thread counts below; pilot samples are not
+# part of the batch. Everything in this file is fixed before the first run.
+# WORKDIR is replaced by run_real.sh with a separate directory per scheduler.
+name: wgs_chr22_1000g
+
+# Policies were trained with 4 capacity units per resource: units = capacity / 4.
+model_units: {cpu: 6, ram: 3.5, gpu: 1, disk: 1}
+capacity:    {cpu: 24, ram: 14, gpu: 4, disk: 4}   # threads, GB (1 GB left to the OS), unused, I/O slots
+instances_per_stage: 4          # at most 4 concurrent tasks of one stage (as in training)
+sla_seconds: 660                # per-task response threshold = 4 x mean estimated task duration (as in the simulator)
+sample_sla_seconds: 3600        # per-sample turnaround target (reported separately)
+workdir: WORKDIR
+
+stages:
+  - name: fastqc
+    model_type: FastQC
+    cmd: "OUT={workdir} bash REPO/realrun/wgs_chr22/stage.sh fastqc {sample} {threads}"
+    cpu: 2
+    ram: 1
+    disk: 1
+    est_seconds: 213
+
+  - name: bwa
+    model_type: BWA-MEM
+    cmd: "OUT={workdir} bash REPO/realrun/wgs_chr22/stage.sh bwa {sample} {threads}"
+    cpu: 8
+    ram: 2
+    disk: 1
+    est_seconds: 148
+
+  - name: sort                  # sort, fixmate, sort, markdup
+    model_type: SAMtools-sort
+    after: [bwa]
+    cmd: "OUT={workdir} bash REPO/realrun/wgs_chr22/stage.sh sort {sample} {threads}"
+    cpu: 4
+    ram: 5
+    disk: 1
+    est_seconds: 94
+
+  - name: index                 # index + samtools stats; branch point
+    model_type: SAMtools-idx
+    after: [sort]
+    cmd: "OUT={workdir} bash REPO/realrun/wgs_chr22/stage.sh index {sample} {threads}"
+    cpu: 2
+    ram: 0.5
+    disk: 1
+    est_seconds: 27
+    branch:
+      rrd_prob: 0.4             # share of pilot samples above the threshold (2 of 5)
+      metric_cmd: "OUT={workdir} METRIC=dup_rate bash REPO/realrun/wgs_chr22/stage.sh metric {sample} 1"
+      rules:
+        - if: "<= 0.10"         # duplicate rate <= 10 %: GATK only
+          reveal: [gatk]
+        - else: [gatk, freebayes]   # higher duplication: add FreeBayes as a second caller
+
+  - name: gatk
+    model_type: GATK-HC
+    dynamic: true
+    cmd: "OUT={workdir} bash REPO/realrun/wgs_chr22/stage.sh gatk {sample} {threads}"
+    cpu: 4
+    ram: 3
+    disk: 0
+    est_seconds: 606
+
+  - name: freebayes
+    model_type: FreeBayes
+    dynamic: true
+    cmd: "OUT={workdir} bash REPO/realrun/wgs_chr22/stage.sh freebayes {sample} {threads}"
+    cpu: 1
+    ram: 0.5
+    disk: 0
+    est_seconds: 288
+
+  - name: bcftools
+    model_type: bcftools
+    after: [index]              # revealed callers are inserted between index and bcftools
+    cmd: "OUT={workdir} bash REPO/realrun/wgs_chr22/stage.sh bcftools {sample} {threads}"
+    cpu: 1
+    ram: 0.5
+    disk: 0
+    est_seconds: 13
+
+  - name: multiqc
+    model_type: MultiQC
+    after: [bcftools, fastqc]
+    cmd: "OUT={workdir} bash REPO/realrun/wgs_chr22/stage.sh multiqc {sample} {threads}"
+    cpu: 1
+    ram: 0.5
+    disk: 0
+    est_seconds: 14

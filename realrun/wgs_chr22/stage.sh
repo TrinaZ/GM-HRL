@@ -18,7 +18,7 @@ D=$OUT/$S; mkdir -p "$D"; cd "$D"
 
 case $STAGE in
 fastqc)
-  mkdir -p qc; fastqc -q -t "$T" -o qc "$R1" "$R2" ;;
+  mkdir -p qc; fastqc -q -t "$T" --outdir qc "$R1" "$R2" ;;
 bwa)
   bwa mem -t "$T" -R "@RG\tID:${S}\tSM:${S}\tPL:ILLUMINA" "$REF" "$R1" "$R2" 2> bwa.log \
     | samtools view -b -o "$S.raw.bam" - ;;
@@ -69,7 +69,7 @@ bcftools)   # normalise every caller output that exists; keep the union, report 
   vcfs=()
   for c in gatk freebayes; do
     if [ -s "$S.$c.vcf.gz" ]; then
-      bcftools norm -f "$REF" -m -any -Oz -o "$S.$c.norm.vcf.gz" "$S.$c.vcf.gz"
+      bcftools norm -f "$REF" -c ws -m -any -Oz -o "$S.$c.norm.vcf.gz" "$S.$c.vcf.gz"
       bcftools index -f "$S.$c.norm.vcf.gz"; vcfs+=("$S.$c.norm.vcf.gz")
     fi
   done
