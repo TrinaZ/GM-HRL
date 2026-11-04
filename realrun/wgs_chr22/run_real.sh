@@ -9,6 +9,7 @@ MODE=${1:?dry|real|analyze}
 REPO=$(cd "$(dirname "$0")/../.." && pwd)
 W=${W:-/mnt/e/ForPhD/Data/wgs_chr22}
 GAP=${GAP:-240}; SEED=${SEED:-2026}
+ORDER=${ORDER:-"fifo heft gmhrl"}; TAG=${TAG:-real}
 CKPT=${CKPT:-$REPO/runs_v2/gmhrl_genomic_N500_s0/best.pt}
 RUNS=$REPO/realruns
 mkdir -p "$RUNS"
@@ -33,18 +34,19 @@ dry)
   done
   python3 "$REPO/scripts/realrun.py" analyze "$RUNS"/dry_fifo "$RUNS"/dry_heft "$RUNS"/dry_gmhrl --out "$RUNS/dry_summary" ;;
 real)
-  for p in fifo heft gmhrl; do
-    rd=$RUNS/real_$p
+  for p in $ORDER; do
+    rd=$RUNS/${TAG}_$p
     if done_run "$rd"; then echo "skip $p: finished"; continue; fi
-    rm -rf "$rd" "$W/run_$p"
-    spec=$(spec_for "$p" "$W/run_$p")
+    wd=$W/run_$p; [ "$TAG" = real ] || wd=$W/run_${TAG}_$p
+    rm -rf "$rd" "$wd"
+    spec=$(spec_for "${TAG}_$p" "$wd")
     echo "=== $p start $(date)"
     python3 "$REPO/scripts/realrun.py" run --spec "$spec" --samples "$BATCH" --policy $p \
       $( [ $p = gmhrl ] && echo --ckpt "$CKPT" ) --run_dir "$rd"
     echo "=== $p end $(date)"
-    rm -f "$W/run_$p"/*/*.dedup.bam "$W/run_$p"/*/*.dedup.bam.bai   # keep VCFs/QC, free ~25 GB
+    rm -f "$wd"/*/*.dedup.bam "$wd"/*/*.dedup.bam.bai   # keep VCFs/QC, free ~25 GB
   done ;;
 analyze)
-  python3 "$REPO/scripts/realrun.py" analyze "$RUNS"/real_fifo "$RUNS"/real_heft "$RUNS"/real_gmhrl \
-    --bound --bound_time 3600 --bound_workers 8 --out "$RUNS/summary" ;;
+  python3 "$REPO/scripts/realrun.py" analyze "$RUNS"/${TAG}_fifo "$RUNS"/${TAG}_heft "$RUNS"/${TAG}_gmhrl \
+    --bound --bound_time 3600 --bound_workers 8 --out "$RUNS/summary_${TAG}" ;;
 esac
