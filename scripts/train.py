@@ -35,6 +35,10 @@ VARIANTS = {
     # single-level GNN + PPO dispatcher in the style of Zhang et al. (2020);
     # same network as the no_hierarchy ablation, trained on every (domain, N)
     "gnn_ppo": {"hierarchical": False},
+    # GM-HRL with capacity reservation for runtime-revealed work (RESERVATION_SPEC.md)
+    "gmhrl_res": {"reserve": True},
+    "no_gnn_res": {"use_gnn": False, "reserve": True},
+    "no_dynamic_graph_res": {"dynamic_graph": False, "reserve": True},
 }
 
 

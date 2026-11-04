@@ -40,6 +40,9 @@ from gmhrl import bounds as B  # noqa: E402
 METRICS = ("makespan", "makespan_over_lb", "sla_violation_rate", "util_cpu", "util_ram", "util_gpu",
            "util_disk", "mean_wait", "mean_response", "n_rrd_events", "n_dynamic_tasks",
            "latency_ms_mean", "latency_ms_p95")
+# reservation diagnostics (GM-HRL+R only; empty for other methods, not summarised)
+RES_METRICS = ("res_share_decisions", "res_mean_frac", "res_blocked_pairs", "res_blocked_tasks",
+               "res_used_frac_sum", "res_released_frac_sum", "res_aged_bypass", "res_liveness_bypass")
 
 
 def parse():
@@ -61,6 +64,8 @@ def parse():
     p.add_argument("--bounds_csv", default=None, help="reuse bounds.csv from an earlier evaluation")
     p.add_argument("--device", default="cpu")
     p.add_argument("--out", required=True)
+    p.add_argument("--res_log", action="store_true",
+                   help="write the per-decision reservation log of every GM-HRL+R run to <out>/res_logs/")
     return p.parse_args()
 
 
@@ -144,7 +149,15 @@ def main():
                     for name, (kind, obj) in methods.items():
                         m = run_one(kind, obj, sim, seed)
                         rows.append({"method": name, "domain": dom, "N": N, "k": k, "seed": seed,
-                                     **{key: m.get(key) for key in METRICS}})
+                                     **{key: m.get(key) for key in METRICS},
+                                     **{key: m.get(key, "") for key in RES_METRICS}})
+                        res = getattr(obj, "last_reservation", None) if kind == "model" else None
+                        if a.res_log and res is not None:
+                            lp = out / "res_logs" / f"{name}_{dom}_N{N}_k{k}_s{seed}.jsonl"
+                            lp.parent.mkdir(exist_ok=True)
+                            with open(lp, "w") as f:
+                                for rec in res.log:
+                                    f.write(json.dumps(rec) + "\n")
                 print(f"{dom} N={N} instance {k} done", flush=True)
 
     if bound_rows:

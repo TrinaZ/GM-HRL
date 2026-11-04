@@ -189,6 +189,12 @@ class Dispatcher:
                 break
             self._sample_usage()
             time.sleep(self.poll * (self.time_scale if self.dry_run else 1.0))
+        res = getattr(self.policy, "mem", {}).get("res")
+        if res is not None:      # GM-HRL+R: reservation log and summary
+            with open(self.run_dir / "reservation.jsonl", "w", encoding="utf-8") as f:
+                for rec in res.log:
+                    f.write(json.dumps(rec, default=float) + "\n")
+            self._emit("reservation", **res.summary())
         self._emit("done", n_decisions=self.n_decisions,
                    decision_ms_mean=float(np.mean(self.decision_ms)) if self.decision_ms else 0.0,
                    decision_ms_p95=float(np.percentile(self.decision_ms, 95)) if self.decision_ms else 0.0)

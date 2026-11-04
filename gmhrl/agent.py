@@ -35,6 +35,7 @@ import torch
 
 from .features import build_obs
 from .model import GMHRLNet
+from .reserve import Reservation, C_MAX, PRIOR_N0
 from .sim import MD2POSSim, WAIT
 
 
@@ -72,6 +73,9 @@ class AgentConfig:
     minibatch: int = 64
     max_grad_norm: float = 0.5
     alt_period: int = 5                 # iterations per H-PPO phase
+    reserve: bool = False               # GM-HRL+R: capacity reservation set by the Meta-Controller
+    res_c_max: float = C_MAX
+    res_prior_n0: float = PRIOR_N0
     device: str = "cpu"
 
 
@@ -100,8 +104,10 @@ def _frag(sim: MD2POSSim) -> float:
 class GMHRLAgent:
     def __init__(self, cfg: AgentConfig, rcfg: Optional[RewardConfig] = None):
         self.cfg, self.rcfg = cfg, rcfg or RewardConfig()
+        self.use_res = bool(cfg.reserve and cfg.hierarchical)
         self.net = GMHRLNet(cfg.d, cfg.layers, cfg.d_g, cfg.hidden,
-                            cfg.use_gnn, cfg.hierarchical).to(cfg.device)
+                            cfg.use_gnn, cfg.hierarchical, n_res=1 if self.use_res else 0).to(cfg.device)
+        self.last_reservation: Optional[Reservation] = None
         n = self.net
         sub_params = (list(n.enc.parameters()) + list(n.Wg.parameters()) + list(n.Wx.parameters())
                       + list(n.ctx.parameters()) + list(n.score.parameters())
@@ -125,12 +131,19 @@ class GMHRLAgent:
         meta_tr: List[Dict] = []
         prev = None          # (index in sub_tr, snapshot)
         latencies = []
+        res = Reservation(cfg.res_c_max, cfg.res_prior_n0, keep_log=not train) if self.use_res else None
+        self.last_reservation = res
+
+        def get_D():
+            D0 = sim.dispatchable()
+            return res.filter(sim, D0, net.g_res(g)) if (res is not None and D0) else D0
+
         while True:
-            D = sim.dispatchable()
+            D = get_D()
             while not D and not sim.done():
                 if not sim.advance():
                     break
-                D = sim.dispatchable()
+                D = get_D()
             if prev is not None:
                 b = _base_reward(sim, prev[1], rc)
                 tr = sub_tr[prev[0]]
@@ -171,7 +184,10 @@ class GMHRLAgent:
                 frag = _frag(sim)
                 sim.advance()
             else:
-                sim.dispatch(int(obs.node_ids[int(obs.cand[a])]))
+                tid = int(obs.node_ids[int(obs.cand[a])])
+                if res is not None:
+                    res.on_dispatch(sim, tid)
+                sim.dispatch(tid)
                 frag = _frag(sim)
             sub_tr.append({"obs": obs, "g": g, "a": a, "logp": logp, "v": float(v),
                            "sim": simv, "frag": frag, "r": 0.0})
@@ -182,6 +198,8 @@ class GMHRLAgent:
         m["n_sub_decisions"] = len(sub_tr)
         m["n_meta_decisions"] = len(meta_tr)
         m["return_sub"] = float(sum(t["r"] for t in sub_tr))
+        if res is not None:
+            m.update(res.summary())
         return {"metrics": m, "sub": sub_tr, "meta": meta_tr}
 
     # -------------------------------------------------------------------- PPO
@@ -303,11 +321,17 @@ class GMHRLAgent:
         ``state`` must expose the same attributes as MD2POSSim. Decision
         logic is identical to ``rollout(..., train=False)``."""
         cfg, net = self.cfg, self.net
-        mem = {"g": None, "last_meta_t": -math.inf, "state": None}
+        mem = {"g": None, "last_meta_t": -math.inf, "state": None, "res": None}
+        use_res = self.use_res
 
         def pol(state, D):
             if mem["state"] is not state:
-                mem.update(g=None, last_meta_t=-math.inf, state=state)
+                mem.update(g=None, last_meta_t=-math.inf, state=state,
+                           res=Reservation(cfg.res_c_max, cfg.res_prior_n0) if use_res else None)
+            if mem["res"] is not None:
+                D = mem["res"].filter(state, list(D), net.g_res(mem["g"]))
+                if not D:
+                    return WAIT
             dev = cfg.device
             meta_dt = cfg.meta_interval_factor * float(state.inst.p_est.mean())
             obs = build_obs(state, D, cfg.dynamic_graph)
@@ -323,8 +347,12 @@ class GMHRLAgent:
                 a = int(torch.argmax(logits))
             if a == len(obs.cand):
                 return WAIT
-            return int(obs.node_ids[int(obs.cand[a])])
+            tid = int(obs.node_ids[int(obs.cand[a])])
+            if mem["res"] is not None:
+                mem["res"].on_dispatch(state, tid)
+            return tid
 
+        pol.mem = mem
         return pol
 
     def policy_fn(self):

@@ -18,6 +18,10 @@ encoder (no direct channel).
 Sub-Controller pi^S: logits over dispatchable tasks MLP([h_v ; c(s_t)]) and a
 WAIT logit MLP([z_t ; s_t]); masked softmax; value V^S(s_t, z_t).
 
+Reservation (GM-HRL+R, n_res = 1): the Meta-Controller's Gaussian has one
+extra dimension; g_res = sigmoid(g[d_g]) is the reservation level used by
+gmhrl/reserve.py. The goal writer uses only g[:d_g].
+
 Ablation switches: use_gnn=False replaces message passing by a per-node MLP
 (L layers, no neighbour aggregation); hierarchical=False removes the
 Meta-Controller (goal attribute fixed to 0.5).
@@ -89,16 +93,20 @@ class Encoder(nn.Module):
 
 class GMHRLNet(nn.Module):
     def __init__(self, d: int = 64, layers: int = 2, d_g: int = 8, hidden: int = 128,
-                 use_gnn: bool = True, hierarchical: bool = True):
+                 use_gnn: bool = True, hierarchical: bool = True, n_res: int = 0,
+                 res_bias_init: float = -1.0):
         super().__init__()
-        self.d, self.d_g, self.hierarchical = d, d_g, hierarchical
+        self.d, self.d_g, self.hierarchical, self.n_res = d, d_g, hierarchical, n_res
         self.enc = Encoder(d, layers, use_gnn)
         # goal writer
         self.Wg = nn.Linear(d_g, d_g, bias=False)
         self.Wx = nn.Linear(NODE_DIM, d_g)
         # meta
-        self.meta_mu = mlp(GLOBAL_DIM + d, hidden, d_g)
-        self.meta_logstd = nn.Parameter(torch.full((d_g,), -1.5))
+        self.meta_mu = mlp(GLOBAL_DIM + d, hidden, d_g + n_res)
+        self.meta_logstd = nn.Parameter(torch.full((d_g + n_res,), -1.5))
+        if n_res:
+            with torch.no_grad():             # conservative start: sigmoid(-1) = 0.27
+                self.meta_mu[-1].bias[d_g:] = res_bias_init
         self.meta_v = mlp(GLOBAL_DIM + d, hidden, 1)
         # sub
         self.ctx = mlp(GLOBAL_DIM, hidden, d)
@@ -116,7 +124,7 @@ class GMHRLNet(nn.Module):
         else:
             xg = x.clone()
             xg[:, GOAL_IDX] = 0.0
-            p = torch.sigmoid((self.Wx(xg) * self.Wg(g)).sum(-1) / math.sqrt(self.d_g))
+            p = torch.sigmoid((self.Wx(xg) * self.Wg(g[..., :self.d_g])).sum(-1) / math.sqrt(self.d_g))
             x[:, GOAL_IDX] = p
         return x
 
@@ -140,6 +148,12 @@ class GMHRLNet(nn.Module):
         logits = torch.cat([lt, lw], 0)
         v = self.sub_v(torch.cat([s, z], -1)).squeeze(-1)
         return logits, v
+
+    def g_res(self, g) -> float:
+        """Reservation level in [0, 1] (0 without a reservation head or goal)."""
+        if not self.n_res or g is None:
+            return 0.0
+        return float(torch.sigmoid(g[..., self.d_g]))
 
     def goal_annotation(self, x, g):
         """Node goal attributes p_v (for Sim)."""
