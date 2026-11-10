@@ -11,6 +11,14 @@ Methods:
   ORHG                            rolling-horizon CP-SAT re-planning (1 s per solve)
   GA=path/to/ga.json              GA-evolved dispatching rule
   NAME=path/to/checkpoint.pt      trained GM-HRL / ablation / PPO checkpoint
+  NAME=path.pt@MODE               goal diagnostic (HIERARCHY_SPEC.md): MODE = own | neutral |
+                                  shuffle | random (see gmhrl/agent.py)
+  EDF WEDF                        MD2POS-MW deadline rules (with --mw_K)
+
+MD2POS-MW: with --mw_K K the instances are multi-workflow batches k (from
+--data, generated if missing) and the workflow metrics (wv, stat_viol,
+routine_viol, w_tardiness) are added; --goal_measure records the M1 share of
+decisions that change under the neutral goal (column goal_changed).
 
 Example:
   python scripts/evaluate.py --domains genomic --N 50 \
@@ -31,7 +39,8 @@ from scipy.stats import wilcoxon
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from gmhrl.agent import GMHRLAgent  # noqa: E402
-from gmhrl.baselines import fifo, sjf, heft, make_random, make_ga_policy  # noqa: E402
+from gmhrl.baselines import fifo, sjf, heft, edf, wedf, make_random, make_ga_policy  # noqa: E402
+from gmhrl.multiwf import write_split_mw  # noqa: E402
 from gmhrl.orhg import make_orhg_policy  # noqa: E402
 from gmhrl.instance import load_instance, instance_paths  # noqa: E402
 from gmhrl.sim import MD2POSSim, SimConfig, run_policy  # noqa: E402
@@ -40,6 +49,7 @@ from gmhrl import bounds as B  # noqa: E402
 METRICS = ("makespan", "makespan_over_lb", "sla_violation_rate", "util_cpu", "util_ram", "util_gpu",
            "util_disk", "mean_wait", "mean_response", "n_rrd_events", "n_dynamic_tasks",
            "latency_ms_mean", "latency_ms_p95")
+MW_METRICS = ("wv", "stat_viol", "routine_viol", "w_tardiness", "n_stat", "goal_changed")
 # reservation diagnostics (GM-HRL+R only; empty for other methods, not summarised)
 RES_METRICS = ("res_share_decisions", "res_mean_frac", "res_blocked_pairs", "res_blocked_tasks",
                "res_used_frac_sum", "res_released_frac_sum", "res_aged_bypass", "res_liveness_bypass")
@@ -63,6 +73,10 @@ def parse():
     p.add_argument("--bound_workers", type=int, default=8)
     p.add_argument("--bounds_csv", default=None, help="reuse bounds.csv from an earlier evaluation")
     p.add_argument("--device", default="cpu")
+    p.add_argument("--mw_K", type=int, default=0, help="MD2POS-MW batches of K workflows")
+    p.add_argument("--stat_share", type=float, default=0.2)
+    p.add_argument("--data", default=str(ROOT / "data" / "generated"), help="root of generated MD2POS-MW batches")
+    p.add_argument("--goal_measure", action="store_true", help="M1: record goal_changed for hierarchical models")
     p.add_argument("--out", required=True)
     p.add_argument("--res_log", action="store_true",
                    help="write the per-decision reservation log of every GM-HRL+R run to <out>/res_logs/")
@@ -78,6 +92,10 @@ def build_methods(specs, device):
             out[s] = ("rule", sjf)
         elif s == "HEFT":
             out[s] = ("rule", heft)
+        elif s == "EDF":
+            out[s] = ("rule", edf)
+        elif s == "WEDF":
+            out[s] = ("rule", wedf)
         elif s == "Random":
             out[s] = ("random", None)
         elif s == "ORHG":
@@ -87,7 +105,13 @@ def build_methods(specs, device):
             out["GA"] = ("rule", make_ga_policy(np.array(w)))
         elif "=" in s:
             name, path = s.split("=", 1)
-            out[name] = ("model", GMHRLAgent.load(path, device))
+            mode = "own"
+            if "@" in path:
+                path, mode = path.rsplit("@", 1)
+                assert mode in ("own", "neutral", "shuffle", "random"), mode
+            ag = GMHRLAgent.load(path, device)
+            ag.goal_test = mode
+            out[name] = ("model", ag)
         else:
             raise ValueError(f"unknown method {s}")
     return out
@@ -117,6 +141,12 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     scfg = SimConfig(rho=a.rho, sla_factor=a.sla_factor, rrd_mult=a.rrd_mult, cap_scale=a.cap_scale)
     methods = build_methods(a.methods, a.device)
+    mw = a.mw_K > 0
+    for kind, obj in methods.values():
+        if kind == "model":
+            assert obj.cfg.mw == mw, "model and instances disagree on MD2POS-MW"
+            obj.measure_goal = bool(a.goal_measure and obj.goal_test == "own")
+    metric_keys = METRICS + (MW_METRICS if mw else ())
     rows = []
     bound_rows = []
     reuse = {}
@@ -124,8 +154,11 @@ def main():
         for r in csv.DictReader(open(a.bounds_csv)):
             reuse[(r["domain"], int(r["N"]), int(r["k"]), int(r["seed"]))] = r
     for dom in a.domains:
-        for N in a.N:
-            paths = {int(p.stem[-4:]): p for p in instance_paths(a.bench, dom, N)}  # k -> file (instance_seedKKKK)
+        for N in ([a.mw_K] if mw else a.N):
+            if mw:      # N column holds K for MD2POS-MW batches
+                paths = dict(zip(a.instances, write_split_mw(a.data, dom, a.mw_K, a.stat_share, a.instances)))
+            else:
+                paths = {int(p.stem[-4:]): p for p in instance_paths(a.bench, dom, N)}  # k -> file (instance_seedKKKK)
             for k in a.instances:
                 inst = load_instance(paths[k])
                 sim = MD2POSSim(inst, scfg, seed=0)
@@ -149,7 +182,7 @@ def main():
                     for name, (kind, obj) in methods.items():
                         m = run_one(kind, obj, sim, seed)
                         rows.append({"method": name, "domain": dom, "N": N, "k": k, "seed": seed,
-                                     **{key: m.get(key) for key in METRICS},
+                                     **{key: m.get(key, "") for key in metric_keys},
                                      **{key: m.get(key, "") for key in RES_METRICS}})
                         res = getattr(obj, "last_reservation", None) if kind == "model" else None
                         if a.res_log and res is not None:
@@ -182,12 +215,19 @@ def main():
     names = list(methods)
     ref = a.ref or next((n for n in names if methods[n][0] == "model"), names[0])
     summ = {"config": {**vars(a), "sim": scfg.to_dict()}, "methods": {}}
-    keys = list(METRICS) + (["gap_to_clairvoyant_LB"] if bound_rows else [])
+    keys = list(metric_keys) + (["gap_to_clairvoyant_LB"] if bound_rows else [])
+
+    def _vals(R, k):
+        v = np.array([float(r[k]) for r in R if r.get(k) not in ("", None)], dtype=float)
+        return v[~np.isnan(v)]
     for n in names:
         R = [r for r in rows if r["method"] == n]
-        summ["methods"][n] = {k: {"mean": float(np.mean([r[k] for r in R])),
-                                  "std": float(np.std([r[k] for r in R], ddof=1)) if len(R) > 1 else 0.0}
-                              for k in keys}
+        summ["methods"][n] = {}
+        for k in keys:
+            v = _vals(R, k)
+            if len(v):
+                summ["methods"][n][k] = {"mean": float(v.mean()),
+                                         "std": float(v.std(ddof=1)) if len(v) > 1 else 0.0, "n": len(v)}
         summ["methods"][n]["n_runs"] = len(R)
     tests = {}
     refR = [r for r in rows if r["method"] == ref]
@@ -196,7 +236,7 @@ def main():
             continue
         R = [r for r in rows if r["method"] == n]
         tests[n] = {}
-        for k in ("makespan", "sla_violation_rate"):
+        for k in ("makespan", "sla_violation_rate") + (("wv",) if mw else ()):
             x = np.array([r[k] for r in refR]); y = np.array([r[k] for r in R])
             if np.allclose(x, y):
                 tests[n][k] = {"p_value": 1.0, "ref_better_share": 0.0}
@@ -210,7 +250,8 @@ def main():
     json.dump(summ, open(out / "summary.json", "w"), indent=2)
 
     print(f"\n{'method':16s} {'makespan':>10s} {'mk/LB':>7s} {'SLA':>7s} {'CPU':>6s}" +
-          (f" {'gap':>7s}" if bound_rows else "") + f" {'lat ms':>7s}")
+          (f" {'gap':>7s}" if bound_rows else "") + f" {'lat ms':>7s}" +
+          (f" {'WV':>6s} {'STAT':>6s} {'rout':>6s} {'chg':>6s}" if mw else ""))
     for n in names:
         s = summ["methods"][n]
         line = (f"{n:16s} {s['makespan']['mean']:10.1f} {s['makespan_over_lb']['mean']:7.3f} "
@@ -218,12 +259,16 @@ def main():
         if bound_rows:
             line += f" {100*s['gap_to_clairvoyant_LB']['mean']:6.1f}%"
         line += f" {s['latency_ms_mean']['mean']:7.2f}"
+        if mw:
+            g = lambda k: s[k]["mean"] if k in s else float("nan")  # noqa: E731
+            line += f" {g('wv'):6.3f} {g('stat_viol'):6.3f} {g('routine_viol'):6.3f} {g('goal_changed'):6.3f}"
         print(line)
     print(f"\npaired Wilcoxon tests vs {ref}:")
     for n, t in tests.items():
         print(f"  {n:14s} makespan p={t['makespan']['p_value']:.2g} (ref better in "
               f"{100*t['makespan'].get('ref_better_share', 0):.0f}% of runs); "
-              f"SLA p={t['sla_violation_rate']['p_value']:.2g}")
+              f"SLA p={t['sla_violation_rate']['p_value']:.2g}" +
+              (f"; WV p={t['wv']['p_value']:.2g}" if "wv" in t else ""))
 
 
 if __name__ == "__main__":

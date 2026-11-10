@@ -79,7 +79,39 @@ class MD2POSSim:
         self.inst = inst
         self.sla = float(self.cfg.sla) if self.cfg.sla is not None else \
             float(self.cfg.sla_factor * inst.p_est.mean())
+        self.mw = inst.wf is not None
+        if self.mw:                       # MD2POS-MW: workflow deadlines D_w = r_w + f_w * CP_w
+            K = len(inst.wf_weight)
+            self.wf_K = K
+            self.wf_weight = inst.wf_weight.astype(np.float64)
+            self.wf_wsum = float(self.wf_weight.sum())
+            ef = np.full(inst.N, 0.0)
+            succ = [[] for _ in range(inst.N)]
+            for u, v in inst.edges:
+                succ[u].append(v)
+            for u in reversed(_topo(inst.N, inst.edges)):
+                ef[u] = inst.p_est[u] + max((ef[v] for v in succ[u]), default=0.0)
+            self.wf_cp = np.array([ef[inst.wf == w].max() for w in range(K)])
+            self.wf_rel = np.array([inst.release[inst.wf == w].min() for w in range(K)])
+            self.wf_deadline = self.wf_rel + inst.wf_factor * self.wf_cp
         self.reset(seed)
+
+    # ------------------------------------------------- MD2POS-MW workflow state
+    def wf_remaining(self) -> np.ndarray:
+        """[K] summed p_est of the unfinished visible tasks of each workflow."""
+        st = self.status
+        m = (st == WAITING) | (st == READY) | (st == RUNNING)
+        return np.bincount(self.task_wf[m], weights=self.p_est[m], minlength=self.wf_K)
+
+    def wf_feats(self, ids) -> np.ndarray:
+        """[len(ids), 3] workflow features of tasks: weight / 5, deadline slack
+        (D_w - t) / CP_w clipped to [-3, 3], remaining estimated work / CP_w."""
+        w = self.task_wf[np.asarray(ids, dtype=np.int64)]
+        cp = np.maximum(self.wf_cp, 1e-9)
+        rem = self.wf_remaining()
+        return np.stack([self.wf_weight[w] / 5.0,
+                         np.clip((self.wf_deadline[w] - self.t) / cp[w], -3, 3),
+                         rem[w] / cp[w]], axis=1)
 
     # ------------------------------------------------------------------ setup
     def _realise(self, seed: int):
@@ -130,6 +162,15 @@ class MD2POSSim:
         self.rrd_prob = np.concatenate([inst.rrd_prob, np.zeros(len(dyn))])
         self.is_dyn = np.concatenate([np.zeros(N, bool), np.ones(len(dyn), bool)])
         self.parent = np.full(M, -1, dtype=np.int64)
+        if self.mw:
+            self.task_wf = np.concatenate([inst.wf, np.array([inst.wf[d[0]] for d in dyn], dtype=np.int64)])
+            self.wf_total = np.bincount(self.task_wf, minlength=self.wf_K)
+            self.wf_done = np.zeros(self.wf_K, dtype=np.int64)
+            self.wf_C = np.full(self.wf_K, np.nan)
+            self.wf_miss_w = 0.0
+            self._wf_dl_heap = sorted((float(self.wf_deadline[w]), w) for w in range(self.wf_K))
+            self.task_deadline = self.wf_deadline[self.task_wf]
+            self.task_weight = self.wf_weight[self.task_wf]
         self.trigger = trig
         self.dyn_children: Dict[int, List[int]] = {}
         for k, d in enumerate(dyn):
@@ -264,6 +305,11 @@ class MD2POSSim:
             dl, i = heapq.heappop(self._dl_heap)
             if not (self.finish[i] <= dl + 1e-9):
                 self.sla_viol += 1
+        if self.mw:
+            while self._wf_dl_heap and self._wf_dl_heap[0][0] <= t1:
+                dl, w = heapq.heappop(self._wf_dl_heap)
+                if not (self.wf_C[w] <= dl + 1e-9):
+                    self.wf_miss_w += self.wf_weight[w]
 
     def _make_visible(self, i: int, t: float):
         self.graph_version += 1
@@ -293,6 +339,11 @@ class MD2POSSim:
         self.free_inst[self.sw[i]] += 1
         self.work_done += self.p_est[i]
         self.n_done += 1
+        if self.mw:
+            w = self.task_wf[i]
+            self.wf_done[w] += 1
+            if self.wf_done[w] == self.wf_total[w]:
+                self.wf_C[w] = self.t
         # outcome-driven topology update
         if i < self.N0 and self.trigger[i]:
             self.n_rrd_events += 1
@@ -326,7 +377,18 @@ class MD2POSSim:
         resp = C - self.rel[ex]
         util = self.util_int / (self.cap * max(mk, 1e-9))
         wait = self.start[ex] - self.rel[ex]
+        out_mw = {}
+        if self.mw:
+            late = self.wf_C > self.wf_deadline + 1e-9
+            stat = self.wf_weight > 1
+            tard = np.maximum(0.0, self.wf_C - self.wf_deadline)
+            out_mw = {"wv": float((self.wf_weight * late).sum() / self.wf_wsum),
+                      "stat_viol": float(late[stat].mean()) if stat.any() else float("nan"),
+                      "routine_viol": float(late[~stat].mean()) if (~stat).any() else float("nan"),
+                      "w_tardiness": float((self.wf_weight * tard).sum() / self.wf_wsum),
+                      "n_stat": int(stat.sum())}
         return {
+            **out_mw,
             "makespan": mk,
             "makespan_over_lb": mk / self.lb_ref,
             "lb_ref": self.lb_ref,

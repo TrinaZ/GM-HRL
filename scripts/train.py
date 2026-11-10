@@ -5,8 +5,15 @@ Training instances are freshly generated with the benchmark generator
 (instance indices k = 100 .. 100+n_train-1); validation uses k = 50..54;
 the 20 benchmark instances (k = 0..19) are reserved for testing.
 
+MD2POS-MW (HIERARCHY_SPEC.md): with --mw_K K, training batches are
+multi-workflow batches k = 100.., model selection uses batches k = 60..64
+(realisations 9001, 9002) and the validation WV (ties broken by makespan/LB);
+batches k = 50..54 are left for the pre-registered decision. Every variant
+then gets the workflow features and the deadline reward term (w6 = 1).
+
 Example:
   python scripts/train.py --variant gmhrl --domains genomic --N 50 --iters 300 --out runs/gmhrl_genomic_N50_s0 --seed 0
+  python scripts/train.py --variant gmhrl_v2 --mw_K 12 --stat_share 0.2 --expert wedf --domains genomic ...
 """
 import argparse
 import json
@@ -23,6 +30,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from gmhrl.agent import GMHRLAgent, AgentConfig, RewardConfig  # noqa: E402
 from gmhrl.generate import write_split  # noqa: E402
+from gmhrl.multiwf import write_split_mw  # noqa: E402
 from gmhrl.instance import load_instance  # noqa: E402
 from gmhrl.sim import MD2POSSim, SimConfig  # noqa: E402
 
@@ -39,7 +47,11 @@ VARIANTS = {
     "gmhrl_res": {"reserve": True},
     "no_gnn_res": {"use_gnn": False, "reserve": True},
     "no_dynamic_graph_res": {"dynamic_graph": False, "reserve": True},
+    # GM-HRL v2 (HIERARCHY_SPEC.md, MD2POS-MW only): goal per workflow, eta2 = 1, Meta-Controller BC
+    "gmhrl_v2": {"goal_mode": "workflow", "meta_bc": True},
 }
+VARIANT_REWARD = {"gmhrl_v2": {"eta2": 1.0}}
+MW_ONLY = {"gmhrl_v2"}
 
 
 def parse():
@@ -62,11 +74,15 @@ def parse():
     p.add_argument("--sla_factor", type=float, default=4.0)
     p.add_argument("--rrd_mult", type=float, default=1.0)
     p.add_argument("--cap_scale", type=float, default=1.0)
+    p.add_argument("--mw_K", type=int, default=0, help="MD2POS-MW batches of K workflows (0 = benchmark instances)")
+    p.add_argument("--stat_share", type=float, default=0.2)
+    p.add_argument("--expert", default="heft", choices=["heft", "wedf"], help="behaviour-cloning expert")
     # reward
     p.add_argument("--kappa", type=float, default=1.0)
     p.add_argument("--w", nargs=4, type=float, default=[1.0, 0.1, 1.0, 0.1])
     p.add_argument("--eta", nargs=3, type=float, default=[1.0, 0.1, 0.1])
     p.add_argument("--w5", type=float, default=0.0, help="response-time shaping weight (0 = off)")
+    p.add_argument("--w6", type=float, default=None, help="workflow deadline-miss weight (default 1 with --mw_K, else 0)")
     # agent
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--d", type=int, default=64)
@@ -85,13 +101,17 @@ def make_sims(paths, scfg):
     return [MD2POSSim(load_instance(p), scfg, seed=0) for p in paths]
 
 
-def evaluate(agent, sims, seeds):
+def evaluate(agent, sims, seeds, mw=False):
     rows = []
     for sim in sims:
         for s in seeds:
             rows.append(agent.rollout(sim, s, train=False)["metrics"])
-    return {k: float(np.mean([r[k] for r in rows])) for k in
-            ("makespan_over_lb", "sla_violation_rate", "util_cpu", "latency_ms_mean")}
+    keys = ("makespan_over_lb", "sla_violation_rate", "util_cpu", "latency_ms_mean") + \
+        (("wv", "w_tardiness") if mw else ())
+    ev = {k: float(np.mean([r[k] for r in rows])) for k in keys}
+    # model selection score: makespan/LB (benchmark) or WV with makespan/LB as tie-break (MD2POS-MW)
+    ev["score"] = ev["wv"] + 1e-3 * ev["makespan_over_lb"] if mw else ev["makespan_over_lb"]
+    return ev
 
 
 def main():
@@ -107,17 +127,27 @@ def main():
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
 
+    mw = a.mw_K > 0
+    if a.variant in MW_ONLY and not mw:
+        raise SystemExit(f"variant {a.variant} requires --mw_K")
+    w6 = a.w6 if a.w6 is not None else (1.0 if mw else 0.0)
     scfg = SimConfig(rho=a.rho, sla_factor=a.sla_factor, rrd_mult=a.rrd_mult, cap_scale=a.cap_scale)
     acfg = AgentConfig(d=a.d, layers=a.layers, d_g=a.d_g, lr=a.lr, alt_period=a.alt_period, ent_coef=a.ent_coef,
-                       meta_interval_factor=a.meta_interval_factor, device=a.device, **VARIANTS[a.variant])
+                       meta_interval_factor=a.meta_interval_factor, device=a.device, mw=mw, **VARIANTS[a.variant])
     rcfg = RewardConfig(w1=a.w[0], w2=a.w[1], w3=a.w[2], w4=a.w[3], kappa=a.kappa,
-                        eta1=a.eta[0], eta2=a.eta[1], eta3=a.eta[2], w5=a.w5)
+                        eta1=a.eta[0], eta2=a.eta[1], eta3=a.eta[2], w5=a.w5, w6=w6)
+    for k_, v_ in VARIANT_REWARD.get(a.variant, {}).items():
+        setattr(rcfg, k_, v_)
     agent = GMHRLAgent(acfg, rcfg)
     if a.init:
         agent.net.load_state_dict(GMHRLAgent.load(a.init, a.device).net.state_dict())
 
     train_paths, val_paths = [], []
     for dom in a.domains:
+        if mw:
+            train_paths += write_split_mw(a.data, dom, a.mw_K, a.stat_share, range(100, 100 + a.n_train))
+            val_paths += write_split_mw(a.data, dom, a.mw_K, a.stat_share, range(60, 60 + a.n_val))
+            continue
         for N in a.N:
             train_paths += write_split(a.data, dom, N, range(100, 100 + a.n_train))
             val_paths += write_split(a.data, dom, N, range(50, 50 + a.n_val))
@@ -133,20 +163,23 @@ def main():
     best = float("inf")
     t_start = time.time()
     if a.bc_iters:
-        from gmhrl.baselines import heft
+        from gmhrl.baselines import heft, wedf
+        expert = {"heft": heft, "wedf": wedf}[a.expert]
         for it in range(a.bc_iters):
             eps = []
             for _ in range(a.episodes_per_iter):
                 sim = train_sims[int(rng.integers(len(train_sims)))]
-                eps.append(agent.rollout(sim, int(rng.integers(1 << 30)), train=True, expert=heft))
+                eps.append(agent.rollout(sim, int(rng.integers(1 << 30)), train=True, expert=expert))
             st = agent.bc_update(eps)
             log.write(json.dumps({"bc_iter": it, **st}) + "\n")
             if (it + 1) % a.eval_every == 0 or it == a.bc_iters - 1:
-                ev = evaluate(agent, val_sims, val_seeds)
+                ev = evaluate(agent, val_sims, val_seeds, mw)
                 print(f"[{a.variant}] BC it {it+1}/{a.bc_iters} acc={st['bc_acc']:.3f} "
-                      f"val mk/LB={ev['makespan_over_lb']:.3f} val SLA={ev['sla_violation_rate']:.3f}", flush=True)
-                if ev["makespan_over_lb"] < best:
-                    best = ev["makespan_over_lb"]
+                      + (f"meta_mse={st['meta_bc_mse']:.3f} " if "meta_bc_mse" in st else "")
+                      + f"val mk/LB={ev['makespan_over_lb']:.3f} val SLA={ev['sla_violation_rate']:.3f}"
+                      + (f" val WV={ev['wv']:.3f}" if mw else ""), flush=True)
+                if ev["score"] < best:
+                    best = ev["score"]
                     agent.save(str(out / "best.pt"), {"bc_iter": it, "val": ev})
         agent.save(str(out / "bc.pt"), {"bc_iters": a.bc_iters})
     for it in range(a.iters):
@@ -156,19 +189,20 @@ def main():
             eps.append(agent.rollout(sim, int(rng.integers(1 << 30)), train=True))
         st = agent.update(eps, policy_coef=0.0 if it < a.critic_warmup else 1.0)
         rec = {"iter": it, "time_s": round(time.time() - t_start, 1), **st,
+               **({"train_wv": float(np.mean([e["metrics"]["wv"] for e in eps]))} if mw else {}),
                "train_makespan_over_lb": float(np.mean([e["metrics"]["makespan_over_lb"] for e in eps])),
                "train_sla": float(np.mean([e["metrics"]["sla_violation_rate"] for e in eps])),
                "train_return": float(np.mean([e["metrics"]["return_sub"] for e in eps]))}
         if (it + 1) % a.eval_every == 0 or it == a.iters - 1:
-            ev = evaluate(agent, val_sims, val_seeds)
+            ev = evaluate(agent, val_sims, val_seeds, mw)
             rec.update({f"val_{k}": v for k, v in ev.items()})
-            score = ev["makespan_over_lb"]   # model selection on the primary objective
+            score = ev["score"]   # model selection on the primary objective
             if score < best:
                 best = score
                 agent.save(str(out / "best.pt"), {"iter": it, "val": ev})
             print(f"[{a.variant}] it {it+1}/{a.iters} {rec['time_s']}s phase={st.get('phase')} "
                   f"train mk/LB={rec['train_makespan_over_lb']:.3f} val mk/LB={ev['makespan_over_lb']:.3f} "
-                  f"val SLA={ev['sla_violation_rate']:.3f}", flush=True)
+                  f"val SLA={ev['sla_violation_rate']:.3f}" + (f" val WV={ev['wv']:.3f}" if mw else ""), flush=True)
         log.write(json.dumps(rec) + "\n")
         log.flush()
     agent.save(str(out / "last.pt"), {"iter": a.iters - 1})

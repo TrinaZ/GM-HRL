@@ -14,7 +14,11 @@ t_k < t_{k+1}:
                    during [t_k, t_{k+1}], / N
   idleness  I_k  = time integral of mean_r free_r/R_r while tasks were ready, / LB
 
-  b_k   = w1*dC_k + w2*U_k - kappa*w3*P_k - w4*I_k
+  deadline  M_k  = (MD2POS-MW only) summed weight of the workflows whose
+                   deadline passes in (t_k, t_{k+1}] before they complete,
+                   / summed weight of all workflows of the batch
+
+  b_k   = w1*dC_k + w2*U_k - kappa*w3*P_k - w4*I_k - w6*M_k
   r^M   = sum of b_k over the Meta-Controller interval
   r^S_k = eta1*b_k + (eta2*Sim_k - eta3*Frag_k) / N
 
@@ -22,6 +26,20 @@ t_k < t_{k+1}:
            where p_v is the goal attribute written by the Meta-Controller.
   Frag_k = mean_r free_r/R_r right after the decision if tasks are ready but
            none fits into the free capacity, else 0.
+
+GM-HRL v2 (HIERARCHY_SPEC.md): goal_mode="workflow" (see model.py), eta2 = 1.0,
+and meta_bc=True: during behaviour cloning the Meta-Controller's mean goal is
+also trained, by regressing each workflow's goal attribute p_w onto the
+expert's workflow ranking (rank among the workflows with unfinished visible
+tasks by (weight desc, deadline asc), scaled to [0, 1], 1 = first).
+
+Evaluation diagnostics (train=False only, HIERARCHY_SPEC.md section 4):
+goal_test = "own" | "neutral" (goal attribute 0.5) | "shuffle" (the goal
+attributes of the workflows present are permuted among them; the permutation
+is drawn at each Meta-Controller decision) | "random" (g ~ N(0, I) at each
+Meta-Controller decision). With measure_goal=True, the share of decisions
+that change when the goal attribute is replaced by 0.5 (M1) is measured along
+the executed trajectory and reported as ``goal_changed``.
 """
 from __future__ import annotations
 
@@ -33,7 +51,7 @@ from typing import Dict, List, Optional
 import numpy as np
 import torch
 
-from .features import build_obs
+from .features import build_obs, NODE_DIM, NODE_DIM_MW, GOAL_IDX
 from .model import GMHRLNet
 from .reserve import Reservation, C_MAX, PRIOR_N0
 from .sim import MD2POSSim, WAIT
@@ -50,6 +68,7 @@ class RewardConfig:
     eta2: float = 0.1   # goal consistency (Sim)
     eta3: float = 0.1   # fragmentation
     w5: float = 0.0     # response-time shaping (0 = off, the setting of the main experiments)
+    w6: float = 0.0     # workflow deadline misses (MD2POS-MW; 1.0 in HIERARCHY_SPEC.md)
 
 
 @dataclass
@@ -76,21 +95,26 @@ class AgentConfig:
     reserve: bool = False               # GM-HRL+R: capacity reservation set by the Meta-Controller
     res_c_max: float = C_MAX
     res_prior_n0: float = PRIOR_N0
+    mw: bool = False                    # MD2POS-MW: workflow node features (NODE_DIM_MW)
+    goal_mode: str = "task"             # "workflow" = GM-HRL v2 goal per workflow
+    meta_bc: bool = False               # GM-HRL v2: Meta-Controller trained during BC
     device: str = "cpu"
 
 
 def _snap(sim: MD2POSSim):
-    return (sim.t, sim.work_done, sim.util_int.copy(), sim.sla_viol, sim.idle_int, sim.flow_int)
+    return (sim.t, sim.work_done, sim.util_int.copy(), sim.sla_viol, sim.idle_int, sim.flow_int,
+            sim.wf_miss_w if sim.mw else 0.0)
 
 
 def _base_reward(sim: MD2POSSim, s0, rc: RewardConfig) -> float:
-    t0, w0, u0, v0, i0, f0 = s0
+    t0, w0, u0, v0, i0, f0, m0 = s0
     prog = (sim.work_done - w0) / sim.w_ref - (sim.t - t0) / sim.lb_ref
     util = float(np.mean((sim.util_int - u0) / sim.cap)) / sim.lb_ref
     sla = (sim.sla_viol - v0) / sim.N0
     idle = (sim.idle_int - i0) / sim.lb_ref
     resp = (sim.flow_int - f0) / (sim.N0 * sim.p_mean_ref)
-    return rc.w1 * prog + rc.w2 * util - rc.kappa * rc.w3 * sla - rc.w4 * idle - rc.w5 * resp
+    miss = (sim.wf_miss_w - m0) / sim.wf_wsum if sim.mw else 0.0
+    return rc.w1 * prog + rc.w2 * util - rc.kappa * rc.w3 * sla - rc.w4 * idle - rc.w5 * resp - rc.w6 * miss
 
 
 def _frag(sim: MD2POSSim) -> float:
@@ -101,12 +125,40 @@ def _frag(sim: MD2POSSim) -> float:
     return float(np.mean(sim.free / sim.cap))
 
 
+def _wf_rank_target(sim: MD2POSSim, wf: np.ndarray):
+    """Expert (weighted EDF) workflow ranking among the workflows present in the
+    graph: (node index of each workflow's first node, target in [0, 1], 1 = first)."""
+    W, first = np.unique(wf, return_index=True)
+    order = sorted(range(len(W)), key=lambda j: (-sim.wf_weight[W[j]], sim.wf_deadline[W[j]], W[j]))
+    tgt = np.zeros(len(W), dtype=np.float32)
+    n = len(W)
+    for r, j in enumerate(order):
+        tgt[j] = 1.0 - r / (n - 1) if n > 1 else 1.0
+    return torch.from_numpy(first.astype(np.int64)), torch.from_numpy(tgt)
+
+
+def _shuffle_goals(p: torch.Tensor, wf: np.ndarray, key: np.ndarray) -> torch.Tensor:
+    """M2: permute the per-workflow goal attributes among the workflows present.
+    The workflow with the i-th smallest id passes its value to the workflow with
+    the i-th smallest random key (keys drawn at each Meta-Controller decision)."""
+    W, first, inv = np.unique(wf, return_index=True, return_inverse=True)
+    vals = p[torch.from_numpy(first.astype(np.int64))]
+    dest = np.argsort(key[W], kind="stable")       # position j of W receives vals[i] where dest[i] == j
+    new = torch.empty_like(vals)
+    new[torch.from_numpy(dest.astype(np.int64))] = vals
+    return new[torch.from_numpy(inv.astype(np.int64))]
+
+
 class GMHRLAgent:
     def __init__(self, cfg: AgentConfig, rcfg: Optional[RewardConfig] = None):
         self.cfg, self.rcfg = cfg, rcfg or RewardConfig()
         self.use_res = bool(cfg.reserve and cfg.hierarchical)
         self.net = GMHRLNet(cfg.d, cfg.layers, cfg.d_g, cfg.hidden,
-                            cfg.use_gnn, cfg.hierarchical, n_res=1 if self.use_res else 0).to(cfg.device)
+                            cfg.use_gnn, cfg.hierarchical, n_res=1 if self.use_res else 0,
+                            node_dim=NODE_DIM_MW if cfg.mw else NODE_DIM,
+                            goal_mode=cfg.goal_mode).to(cfg.device)
+        self.goal_test = "own"          # evaluation diagnostics (see module docstring)
+        self.measure_goal = False
         self.last_reservation: Optional[Reservation] = None
         n = self.net
         sub_params = (list(n.enc.parameters()) + list(n.Wg.parameters()) + list(n.Wx.parameters())
@@ -133,6 +185,12 @@ class GMHRLAgent:
         latencies = []
         res = Reservation(cfg.res_c_max, cfg.res_prior_n0, keep_log=not train) if self.use_res else None
         self.last_reservation = res
+        gt = "own" if train else self.goal_test
+        g_rng = np.random.default_rng(seed)
+        t_rng = torch.Generator().manual_seed(seed)
+        shuf_key = None
+        n_goal, n_changed = 0, 0
+        meta_bc = bool(cfg.meta_bc and expert is not None and cfg.hierarchical)
 
         def get_D():
             D0 = sim.dispatchable()
@@ -153,7 +211,7 @@ class GMHRLAgent:
             if sim.done() or not D:
                 break
             t_start = time.perf_counter()
-            obs = build_obs(sim, D, cfg.dynamic_graph)
+            obs = build_obs(sim, D, cfg.dynamic_graph, mw=cfg.mw)
             x, ei, ea, s = obs.x.to(dev), obs.ei.to(dev), obs.ea.to(dev), obs.s.to(dev)
             with torch.no_grad():
                 if cfg.hierarchical and (sim.t - last_meta_t >= meta_dt or g is None):
@@ -161,10 +219,22 @@ class GMHRLAgent:
                     _, z = net.encode(x, ei, ea, g_in)
                     dist, v = net.meta_dist(s, z)
                     g = dist.sample() if train else dist.mean
-                    meta_tr.append({"obs": obs, "g_in": g_in, "g": g, "logp": float(dist.log_prob(g).sum()),
-                                    "v": float(v), "r": 0.0})
+                    if gt == "random":
+                        g = torch.randn(g.shape, generator=t_rng).to(dev)
+                    if gt == "shuffle":
+                        shuf_key = g_rng.random(sim.wf_K)
+                    tr_m = {"obs": obs, "g_in": g_in, "g": g, "logp": float(dist.log_prob(g).sum()),
+                            "v": float(v), "r": 0.0}
+                    if meta_bc:
+                        tr_m["target"] = _wf_rank_target(sim, obs.wf)
+                    meta_tr.append(tr_m)
                     last_meta_t = sim.t
-                h, z = net.encode(x, ei, ea, g)
+                p_ov = None
+                if gt == "neutral":
+                    p_ov = torch.full((x.size(0),), 0.5, device=dev)
+                elif gt == "shuffle" and cfg.hierarchical and g is not None:
+                    p_ov = _shuffle_goals(net.goal_annotation(x, g), obs.wf, shuf_key)
+                h, z = net.encode(x, ei, ea, g, p_ov)
                 logits, v = net.sub_logits(h, z, s, obs.cand.to(dev), obs.can_wait)
                 dist = torch.distributions.Categorical(logits=logits)
                 if expert is not None:
@@ -179,6 +249,12 @@ class GMHRLAgent:
                 else:
                     simv = 0.0
             latencies.append(time.perf_counter() - t_start)
+            if self.measure_goal and not train and cfg.hierarchical and expert is None:
+                with torch.no_grad():       # M1: would the decision change with the neutral goal?
+                    h0, z0 = net.encode(x, ei, ea, g, torch.full((x.size(0),), 0.5, device=dev))
+                    l0, _ = net.sub_logits(h0, z0, s, obs.cand.to(dev), obs.can_wait)
+                n_goal += 1
+                n_changed += int(int(torch.argmax(l0)) != a)
             snap = _snap(sim)
             if a == len(obs.cand):
                 frag = _frag(sim)
@@ -198,6 +274,8 @@ class GMHRLAgent:
         m["n_sub_decisions"] = len(sub_tr)
         m["n_meta_decisions"] = len(meta_tr)
         m["return_sub"] = float(sum(t["r"] for t in sub_tr))
+        if n_goal:
+            m["goal_changed"] = n_changed / n_goal
         if res is not None:
             m.update(res.summary())
         return {"metrics": m, "sub": sub_tr, "meta": meta_tr}
@@ -312,7 +390,52 @@ class GMHRLAgent:
                 torch.nn.utils.clip_grad_norm_(params, cfg.max_grad_norm)
                 self.opt_sub.step()
                 tot += loss.item(); acc += float(np.mean(hits)); n += 1
-        return {"bc_loss": tot / max(n, 1), "bc_acc": acc / max(n, 1), "n_transitions": len(data)}
+        out = {"bc_loss": tot / max(n, 1), "bc_acc": acc / max(n, 1), "n_transitions": len(data)}
+        if cfg.meta_bc and cfg.hierarchical:
+            out.update(self._meta_bc_update(episodes, epochs))
+        return out
+
+    def _meta_bc_update(self, episodes: List[Dict], epochs: int) -> Dict:
+        """GM-HRL v2: regress the workflow goal attributes p_w (mean goal) onto
+        the expert's workflow ranking; value regression to discounted returns."""
+        cfg, dev, net = self.cfg, self.cfg.device, self.net
+        data = []
+        for ep in episodes:
+            trs = [t for t in ep["meta"] if "target" in t]
+            G, ret = 0.0, []
+            for t in reversed(trs):
+                G = t["r"] + cfg.gamma_m * G
+                ret.append(G)
+            ret.reverse()
+            data += list(zip(trs, ret))
+        if not data:
+            return {}
+        params = [p for o in (self.opt_sub, self.opt_meta) for grp in o.param_groups for p in grp["params"]]
+        idx = np.arange(len(data))
+        tot, err, n = 0.0, 0.0, 0
+        for _ in range(epochs):
+            np.random.shuffle(idx)
+            for st in range(0, len(idx), cfg.minibatch):
+                losses, errs = [], []
+                for j in idx[st:st + cfg.minibatch]:
+                    t, R = data[j]
+                    o = t["obs"]
+                    x = o.x.to(dev)
+                    with torch.no_grad():
+                        _, z = net.encode(x, o.ei.to(dev), o.ea.to(dev), t["g_in"])
+                    dist, v = net.meta_dist(o.s.to(dev), z)
+                    first, target = t["target"]
+                    p = net.goal_annotation(x, dist.mean)[first]
+                    mse = torch.mean((p - target.to(dev)) ** 2)
+                    losses.append(mse + cfg.vf_coef * (v - R) ** 2)
+                    errs.append(float(mse.detach()))
+                loss = torch.stack(losses).mean()
+                self.opt_sub.zero_grad(); self.opt_meta.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(params, cfg.max_grad_norm)
+                self.opt_sub.step(); self.opt_meta.step()
+                tot += loss.item(); err += float(np.mean(errs)); n += 1
+        return {"meta_bc_loss": tot / max(n, 1), "meta_bc_mse": err / max(n, 1), "n_meta_transitions": len(data)}
 
     # ------------------------------------------------------------------- misc
     def online_policy(self):
@@ -334,7 +457,7 @@ class GMHRLAgent:
                     return WAIT
             dev = cfg.device
             meta_dt = cfg.meta_interval_factor * float(state.inst.p_est.mean())
-            obs = build_obs(state, D, cfg.dynamic_graph)
+            obs = build_obs(state, D, cfg.dynamic_graph, mw=cfg.mw)
             x, ei, ea, s = obs.x.to(dev), obs.ei.to(dev), obs.ea.to(dev), obs.s.to(dev)
             with torch.no_grad():
                 if cfg.hierarchical and (state.t - mem["last_meta_t"] >= meta_dt or mem["g"] is None):

@@ -22,6 +22,11 @@ Reservation (GM-HRL+R, n_res = 1): the Meta-Controller's Gaussian has one
 extra dimension; g_res = sigmoid(g[d_g]) is the reservation level used by
 gmhrl/reserve.py. The goal writer uses only g[:d_g].
 
+GM-HRL v2 (goal_mode="workflow", MD2POS-MW, HIERARCHY_SPEC.md section 3): the
+goal is written per workflow, p_w = sigmoid(<W_g g, W_x x_w> / sqrt(d_g)), where
+x_w are the three workflow columns of the node features; all tasks of a
+workflow share these columns and therefore receive the same p_w.
+
 Ablation switches: use_gnn=False replaces message passing by a per-node MLP
 (L layers, no neighbour aggregation); hierarchical=False removes the
 Meta-Controller (goal attribute fixed to 0.5).
@@ -35,7 +40,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .features import NODE_DIM, EDGE_DIM, GLOBAL_DIM, GOAL_IDX
+from .features import NODE_DIM, EDGE_DIM, GLOBAL_DIM, GOAL_IDX, WF_IDX, WF_DIM
 
 
 def mlp(i, h, o, layers=2):
@@ -78,9 +83,9 @@ class MPLayer(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, d: int = 64, layers: int = 2, use_gnn: bool = True):
+    def __init__(self, d: int = 64, layers: int = 2, use_gnn: bool = True, node_dim: int = NODE_DIM):
         super().__init__()
-        self.inp = nn.Linear(NODE_DIM, d)
+        self.inp = nn.Linear(node_dim, d)
         self.layers = nn.ModuleList([MPLayer(d, use_gnn) for _ in range(layers)])
 
     def forward(self, x, ei, ea):
@@ -94,13 +99,15 @@ class Encoder(nn.Module):
 class GMHRLNet(nn.Module):
     def __init__(self, d: int = 64, layers: int = 2, d_g: int = 8, hidden: int = 128,
                  use_gnn: bool = True, hierarchical: bool = True, n_res: int = 0,
-                 res_bias_init: float = -1.0):
+                 res_bias_init: float = -1.0, node_dim: int = NODE_DIM, goal_mode: str = "task"):
         super().__init__()
+        assert goal_mode in ("task", "workflow")
         self.d, self.d_g, self.hierarchical, self.n_res = d, d_g, hierarchical, n_res
-        self.enc = Encoder(d, layers, use_gnn)
+        self.goal_mode = goal_mode
+        self.enc = Encoder(d, layers, use_gnn, node_dim)
         # goal writer
         self.Wg = nn.Linear(d_g, d_g, bias=False)
-        self.Wx = nn.Linear(NODE_DIM, d_g)
+        self.Wx = nn.Linear(WF_DIM if goal_mode == "workflow" else node_dim, d_g)
         # meta
         self.meta_mu = mlp(GLOBAL_DIM + d, hidden, d_g + n_res)
         self.meta_logstd = nn.Parameter(torch.full((d_g + n_res,), -1.5))
@@ -117,19 +124,27 @@ class GMHRLNet(nn.Module):
             self.wait[-1].bias.fill_(-3.0)
 
     # --- goal written into the graph
-    def write_goal(self, x: torch.Tensor, g: Optional[torch.Tensor]) -> torch.Tensor:
+    def write_goal(self, x: torch.Tensor, g: Optional[torch.Tensor],
+                   p_override: Optional[torch.Tensor] = None) -> torch.Tensor:
+        """Write the goal attribute. ``p_override`` (evaluation diagnostics only)
+        replaces the written attributes, e.g. by 0.5 or by shuffled goals."""
         x = x.clone()
-        if not self.hierarchical or g is None:
+        if p_override is not None:
+            x[:, GOAL_IDX] = p_override
+        elif not self.hierarchical or g is None:
             x[:, GOAL_IDX] = 0.5
         else:
-            xg = x.clone()
-            xg[:, GOAL_IDX] = 0.0
+            if self.goal_mode == "workflow":
+                xg = x[:, WF_IDX:WF_IDX + WF_DIM].clone()
+            else:
+                xg = x.clone()
+                xg[:, GOAL_IDX] = 0.0
             p = torch.sigmoid((self.Wx(xg) * self.Wg(g[..., :self.d_g])).sum(-1) / math.sqrt(self.d_g))
             x[:, GOAL_IDX] = p
         return x
 
-    def encode(self, x, ei, ea, g):
-        return self.enc(self.write_goal(x, g), ei, ea)
+    def encode(self, x, ei, ea, g, p_override=None):
+        return self.enc(self.write_goal(x, g, p_override), ei, ea)
 
     # --- meta
     def meta_dist(self, s, z):

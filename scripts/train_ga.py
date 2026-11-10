@@ -3,6 +3,7 @@
 (k = 100..) and save its weights.
 
   python scripts/train_ga.py --domains genomic --N 50 --out runs/ga_genomic_N50.json
+  python scripts/train_ga.py --domains genomic --mw_K 12 --out runs_hier/ga_genomic_MW.json   # MD2POS-MW
 """
 import argparse
 import json
@@ -15,6 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from gmhrl.baselines import train_ga  # noqa: E402
 from gmhrl.generate import write_split  # noqa: E402
+from gmhrl.multiwf import write_split_mw  # noqa: E402
 from gmhrl.instance import load_instance  # noqa: E402
 from gmhrl.sim import MD2POSSim, SimConfig  # noqa: E402
 
@@ -30,12 +32,18 @@ def main():
     p.add_argument("--rho", type=float, default=0.8)
     p.add_argument("--sla_factor", type=float, default=4.0)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--mw_K", type=int, default=0, help="MD2POS-MW batches (fitness = makespan/LB + WV)")
+    p.add_argument("--stat_share", type=float, default=0.2)
     p.add_argument("--data", default=str(ROOT / "data" / "generated"))
     p.add_argument("--out", required=True)
     a = p.parse_args()
     scfg = SimConfig(rho=a.rho, sla_factor=a.sla_factor)
     sims = []
     for dom in a.domains:
+        if a.mw_K:
+            for i, path in enumerate(write_split_mw(a.data, dom, a.mw_K, a.stat_share, range(100, 100 + a.n_train))):
+                sims.append(MD2POSSim(load_instance(path), scfg, seed=5000 + i))
+            continue
         for N in a.N:
             for i, path in enumerate(write_split(a.data, dom, N, range(100, 100 + a.n_train))):
                 sims.append(MD2POSSim(load_instance(path), scfg, seed=5000 + i))

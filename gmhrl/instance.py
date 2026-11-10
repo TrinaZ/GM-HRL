@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -32,6 +32,10 @@ class Instance:
     edges: List[Tuple[int, int]] = field(default_factory=list)
     path: str = ""
     n_removed_back_edges: int = 0
+    # multi-workflow batches (MD2POS-MW, HIERARCHY_SPEC.md); None for benchmark instances
+    wf: Optional[np.ndarray] = None          # [N] workflow index of each task
+    wf_weight: Optional[np.ndarray] = None   # [K] urgency weight (5 = STAT, 1 = routine)
+    wf_factor: Optional[np.ndarray] = None   # [K] deadline factor f (D_w = r_w + f * CP_w)
 
     @property
     def num_sw(self) -> int:
@@ -70,7 +74,17 @@ def load_instance(path: str | Path, repair_back_edges: bool = True) -> Instance:
         release=np.array([t["arrival_time_s"] for t in T], dtype=np.float64),
         rrd_prob=np.array([t.get("rrd_prob", 0.0) for t in T], dtype=np.float64),
         edges=edges, path=str(path), n_removed_back_edges=n_back,
+        **_workflow_fields(md, T),
     )
+
+
+def _workflow_fields(md, T):
+    if "workflows" not in md:
+        return {}
+    W = md["workflows"]
+    return {"wf": np.array([t["workflow"] for t in T], dtype=np.int64),
+            "wf_weight": np.array([w["weight"] for w in W], dtype=np.float64),
+            "wf_factor": np.array([w["deadline_factor"] for w in W], dtype=np.float64)}
 
 
 def instance_paths(root: str | Path, domain: str, N: int) -> List[Path]:

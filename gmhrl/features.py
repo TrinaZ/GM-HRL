@@ -19,6 +19,11 @@ Node features (NODE_DIM = 18 + num_sw_pad):
   16    number of unfinished predecessors / 5
   17    goal annotation written by the Meta-Controller (filled by the model)
   18..  processor-type one-hot (padded to NUM_SW_PAD)
+  MD2POS-MW only (NODE_DIM_MW = NODE_DIM + 3, HIERARCHY_SPEC.md section 3):
+  26    workflow weight / 5
+  27    workflow deadline slack (D_w - t) / CP_w, clipped to [-3, 3]
+  28    remaining estimated work of the workflow (summed p_est of its unfinished
+        visible tasks) / CP_w
 Edge features (EDGE_DIM = 2): [1 if inserted by RRD, 1 if source is running]
 
 Global state s_t (GLOBAL_DIM = 15 + NUM_SW_PAD):
@@ -30,6 +35,7 @@ Global state s_t (GLOBAL_DIM = 15 + NUM_SW_PAD):
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 import torch
@@ -42,6 +48,9 @@ GOAL_IDX = 17
 NODE_DIM = 18 + NUM_SW_PAD
 EDGE_DIM = 2
 GLOBAL_DIM = 15 + NUM_SW_PAD
+WF_IDX = NODE_DIM                 # first workflow column (MD2POS-MW)
+WF_DIM = 3
+NODE_DIM_MW = NODE_DIM + WF_DIM
 
 
 @dataclass
@@ -53,9 +62,10 @@ class Obs:
     node_ids: np.ndarray     # [n] task ids
     cand: torch.Tensor       # [k] local indices of dispatchable tasks
     can_wait: bool
+    wf: Optional[np.ndarray] = None   # [n] workflow of each node (MD2POS-MW only)
 
 
-def build_obs(sim: MD2POSSim, D, dynamic_graph: bool = True) -> Obs:
+def build_obs(sim: MD2POSSim, D, dynamic_graph: bool = True, mw: bool = False) -> Obs:
     st = sim.status
     ids = np.nonzero((st == WAITING) | (st == READY) | (st == RUNNING))[0]
     n = len(ids)
@@ -66,7 +76,7 @@ def build_obs(sim: MD2POSSim, D, dynamic_graph: bool = True) -> Obs:
     rank = upward_rank(sim)
     Dset = set(int(i) for i in D)
 
-    x = np.zeros((n, NODE_DIM), dtype=np.float32)
+    x = np.zeros((n, NODE_DIM_MW if mw else NODE_DIM), dtype=np.float32)
     s_ = st[ids]
     x[:, 0] = s_ == WAITING
     x[:, 1] = s_ == READY
@@ -87,6 +97,10 @@ def build_obs(sim: MD2POSSim, D, dynamic_graph: bool = True) -> Obs:
     x[:, 16] = sim.npred_left[ids] / 5
     sw = np.clip(sim.sw[ids], 0, NUM_SW_PAD - 1)
     x[np.arange(n), 18 + sw] = 1.0
+    wf = None
+    if mw:
+        x[:, WF_IDX:WF_IDX + WF_DIM] = sim.wf_feats(ids)
+        wf = sim.task_wf[ids]
 
     src, dst, ea = [], [], []
     dyn_set = set(sim.dyn_edges) if dynamic_graph else set()
@@ -121,4 +135,4 @@ def build_obs(sim: MD2POSSim, D, dynamic_graph: bool = True) -> Obs:
         g[o + 6:o + 10] = sim.dem[r].sum(0) / sim.cap
         g[o + 10] = float(np.clip(np.mean((t - sim.rel[r]) / sla), 0, 3))
     cand = torch.tensor([loc[int(i)] for i in D], dtype=torch.long)
-    return Obs(torch.from_numpy(x), ei, eat, torch.from_numpy(g), ids, cand, sim.can_wait())
+    return Obs(torch.from_numpy(x), ei, eat, torch.from_numpy(g), ids, cand, sim.can_wait(), wf)

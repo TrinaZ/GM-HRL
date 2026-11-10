@@ -11,6 +11,10 @@ available online (visible tasks, estimated durations, revealed edges).
            Every task has one eligible processor type with identical
            instances, so the earliest-finish-time instance choice is trivial.
 * Random - uniform among dispatchable tasks.
+* EDF    - (MD2POS-MW) earliest workflow deadline first, then highest upward rank.
+* WEDF   - (MD2POS-MW) highest workflow weight first, then earliest workflow
+           deadline, then highest upward rank (also the behaviour-cloning
+           expert in HIERARCHY_SPEC.md).
 * GA     - a dispatching rule priority(i) = w . f(i) whose weights w are
            evolved by a genetic algorithm on training instances, then applied
            online to unseen test instances.
@@ -80,6 +84,16 @@ def heft(sim, D):
     return max(D, key=lambda i: (r[i], -i))
 
 
+def edf(sim, D):
+    r = upward_rank(sim)
+    return min(D, key=lambda i: (sim.task_deadline[i], -r[i], i))
+
+
+def wedf(sim, D):
+    r = upward_rank(sim)
+    return min(D, key=lambda i: (-sim.task_weight[i], sim.task_deadline[i], -r[i], i))
+
+
 def make_random(seed: int = 0):
     rng = np.random.default_rng(seed)
     return lambda sim, D: int(D[int(rng.integers(len(D)))])
@@ -87,6 +101,8 @@ def make_random(seed: int = 0):
 
 # ----------------------------------------------------------------------- GA
 GA_FEATURES = ("p_est", "rank", "wait", "demand", "n_succ", "rrd_prob", "slack")
+# MD2POS-MW: the three workflow features of the learned methods are appended
+GA_FEATURES_MW = GA_FEATURES + ("wf_weight", "wf_slack", "wf_remaining")
 
 
 def ga_features(sim: MD2POSSim, D: Sequence[int]) -> np.ndarray:
@@ -102,6 +118,8 @@ def ga_features(sim: MD2POSSim, D: Sequence[int]) -> np.ndarray:
         sim.rrd_prob[D],
         (sim.rel[D] + sim.sla - sim.t) / sim.sla,
     ], axis=1)
+    if getattr(sim, "mw", False):
+        f = np.concatenate([f, sim.wf_feats(D)], axis=1)
     return f
 
 
@@ -109,7 +127,8 @@ def make_ga_policy(w: np.ndarray) -> Callable:
     w = np.asarray(w, dtype=np.float64)
 
     def pol(sim, D):
-        s = ga_features(sim, D) @ w
+        f = ga_features(sim, D)
+        s = f[:, :len(w)] @ w
         return int(D[int(np.argmax(s))])
     return pol
 
@@ -117,21 +136,26 @@ def make_ga_policy(w: np.ndarray) -> Callable:
 def train_ga(train_sims: List[MD2POSSim], pop: int = 20, gens: int = 15,
              sla_weight: float = 1.0, seed: int = 0, verbose: bool = False) -> Dict:
     """Evolve rule weights on training instances. Fitness = mean over training
-    instances of makespan/LB + sla_weight * SLA violation rate (lower is better)."""
+    instances of makespan/LB + sla_weight * SLA violation rate (lower is better).
+    MD2POS-MW (HIERARCHY_SPEC.md): ten features and fitness = makespan/LB + WV;
+    the initial population also contains a weighted-EDF-like rule."""
     rng = np.random.default_rng(seed)
-    k = len(GA_FEATURES)
+    mw = bool(getattr(train_sims[0], "mw", False))
+    k = len(GA_FEATURES_MW if mw else GA_FEATURES)
 
     def fitness(w):
         vals = []
         for sim in train_sims:
             sim.reset(sim.real_seed)
             m = run_policy(sim, make_ga_policy(w))
-            vals.append(m["makespan_over_lb"] + sla_weight * m["sla_violation_rate"])
+            vals.append(m["makespan_over_lb"] + (m["wv"] if mw else sla_weight * m["sla_violation_rate"]))
         return float(np.mean(vals))
 
     P = rng.normal(0, 1, size=(pop, k))
-    P[0] = np.array([0, 1, 0, 0, 0, 0, 0])          # seed with HEFT-like rule
-    P[1] = np.array([-1, 0, 0, 0, 0, 0, 0])         # SJF-like
+    P[0] = np.zeros(k); P[0][1] = 1                 # seed with HEFT-like rule
+    P[1] = np.zeros(k); P[1][0] = -1                # SJF-like
+    if mw:                                          # weighted-EDF-like: weight, then small slack, then rank
+        P[2] = np.zeros(k); P[2][7] = 10; P[2][8] = -1; P[2][1] = 0.1
     F = np.array([fitness(w) for w in P])
     hist = [float(F.min())]
     for g in range(gens):
@@ -152,8 +176,8 @@ def train_ga(train_sims: List[MD2POSSim], pop: int = 20, gens: int = 15,
         if verbose:
             print(f"GA gen {g+1}/{gens}: best fitness {F.min():.4f}")
     best = P[int(np.argmin(F))]
-    return {"weights": best.tolist(), "features": list(GA_FEATURES),
+    return {"weights": best.tolist(), "features": list(GA_FEATURES_MW if mw else GA_FEATURES),
             "fitness": float(F.min()), "history": hist}
 
 
-BASELINES = {"FIFO": fifo, "SJF": sjf, "HEFT": heft}
+BASELINES = {"FIFO": fifo, "SJF": sjf, "HEFT": heft, "EDF": edf, "WEDF": wedf}
