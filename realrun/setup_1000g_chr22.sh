@@ -8,6 +8,7 @@
 #
 # Usage:  W=/mnt/e/ForPhD/Data/wgs_chr22 REF_FULL=/path/GRCh38_full_analysis_set_plus_decoy_hla.fa \
 #         bash realrun/setup_1000g_chr22.sh [tools] [ref] [samples] [fetch]
+# EXCLUDE='file1 file2' (optional): sample lists whose samples must not be drawn
 set -euo pipefail
 W=${W:-/mnt/e/ForPhD/Data/wgs_chr22}
 REF_FULL=${REF_FULL:-/mnt/e/ForPhD/Code/创新点3/old_version/1000genome/GRCh38_full_analysis_set_plus_decoy_hla.fa}
@@ -69,6 +70,13 @@ for line in open("sequence.index", encoding="utf-8"):
                      url.replace("ftp://", "https://")))
 rows = sorted(set(rows))
 print(f"{len(rows)} high-coverage CRAMs in the index")
+import os
+excl = set()
+for fn in os.environ.get("EXCLUDE", "").split():      # earlier batches / pilot samples (first column)
+    excl |= {l.split("\t")[0] for l in open(fn).read().splitlines()[1:] if l.strip()}
+if excl:
+    rows = [r for r in rows if r[0] not in excl]
+    print(f"{len(excl)} samples excluded (EXCLUDE), {len(rows)} remain")
 pick = sorted(random.Random(seed).sample(rows, ns))
 with open("samples.tsv", "w") as fh:
     fh.write("sample\tcram_url\n")

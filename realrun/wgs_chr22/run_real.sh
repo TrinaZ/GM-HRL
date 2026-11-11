@@ -11,7 +11,7 @@ W=${W:-/mnt/e/ForPhD/Data/wgs_chr22}
 GAP=${GAP:-240}; SEED=${SEED:-2026}
 ORDER=${ORDER:-"fifo heft gmhrl"}; TAG=${TAG:-real}
 CKPT=${CKPT:-$REPO/runs_v2/gmhrl_genomic_N500_s0/best.pt}
-RUNS=$REPO/realruns
+RUNS=${RUNS:-$REPO/realruns}
 mkdir -p "$RUNS"
 export W OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
 BATCH=$RUNS/batch.tsv
