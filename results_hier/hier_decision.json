@@ -1,0 +1,301 @@
+{
+  "criteria": {
+    "M1": "mean goal_changed >= 0.05 in both domains",
+    "M2": "WV(own) < WV(shuffled across workflows), p < 0.05, both domains; random goals reported only",
+    "H1": "GM-HRL v2 vs GNN-PPO: relative WV reduction >= 5%, p < 0.05, both domains",
+    "H2": "GM-HRL v2 vs WEDF: same criterion"
+  },
+  "domains": {
+    "genomic": {
+      "n_pairs": 20,
+      "M1": {
+        "goal_changed": 0.019020851122327157,
+        "pass": false
+      },
+      "M2": {
+        "wv_own": 0.08910714285714286,
+        "wv_shuffle": 0.09219246031746031,
+        "p": 0.892738400944348,
+        "pass": false,
+        "secondary_random": {
+          "wv_random": 0.09065476190476192,
+          "p": 0.7150006546880893
+        }
+      },
+      "H1": {
+        "mean": 0.08910714285714286,
+        "mean_ref": 0.08808531746031746,
+        "rel_reduction": -0.011600405451064333,
+        "p": 0.9187074054282889,
+        "pass": false
+      },
+      "H2": {
+        "mean": 0.08910714285714286,
+        "mean_ref": 0.0812202380952381,
+        "rel_reduction": -0.09710516672773917,
+        "p": 0.49896229860376107,
+        "pass": false
+      },
+      "methods": {
+        "EDF": {
+          "wv": 0.08955357142857143,
+          "stat_viol": 0.2125,
+          "routine_viol": 0.005,
+          "w_tardiness": 24.261786600934848,
+          "makespan_over_lb": 1.1172780269450058,
+          "sla_violation_rate": 0.569818922892001,
+          "latency_ms_mean": 0.018281354143110058,
+          "p_wv_vs_v2": 0.6120898800892568
+        },
+        "FIFO": {
+          "wv": 0.12288690476190478,
+          "stat_viol": 0.25833333333333325,
+          "routine_viol": 0.017499999999999998,
+          "w_tardiness": 52.121162959453635,
+          "makespan_over_lb": 1.1134361744402748,
+          "sla_violation_rate": 0.5790486740212899,
+          "latency_ms_mean": 0.0006241330635254191,
+          "p_wv_vs_v2": 0.12348527214454898
+        },
+        "GA": {
+          "wv": 0.09997023809523808,
+          "stat_viol": 0.22916666666666666,
+          "routine_viol": 0.005,
+          "w_tardiness": 28.28230673439246,
+          "makespan_over_lb": 1.0932200865454242,
+          "sla_violation_rate": 0.5578643316816324,
+          "latency_ms_mean": 0.051200271610052285,
+          "p_wv_vs_v2": 0.6120898800892568
+        },
+        "GM-HRL": {
+          "wv": 0.09903769841269841,
+          "stat_viol": 0.22361111111111107,
+          "routine_viol": 0.012824074074074075,
+          "w_tardiness": 25.101954204475117,
+          "makespan_over_lb": 1.104779455046771,
+          "sla_violation_rate": 0.5641535068703687,
+          "latency_ms_mean": 0.8536298068399839,
+          "p_wv_vs_v2": 0.4652088184521418
+        },
+        "GM-HRL-v2": {
+          "wv": 0.08910714285714286,
+          "stat_viol": 0.20694444444444443,
+          "routine_viol": 0.012302188552188552,
+          "w_tardiness": 24.21163470012672,
+          "makespan_over_lb": 1.1052560882975135,
+          "sla_violation_rate": 0.5600787481382714,
+          "latency_ms_mean": 0.858460701254692
+        },
+        "GM-HRL-v2-random": {
+          "wv": 0.09065476190476192,
+          "stat_viol": 0.2111111111111111,
+          "routine_viol": 0.008552188552188552,
+          "w_tardiness": 24.991391188834445,
+          "makespan_over_lb": 1.1026573736301233,
+          "sla_violation_rate": 0.559230728669962,
+          "latency_ms_mean": 0.8481627684736163,
+          "p_wv_vs_v2": 0.7150006546880893
+        },
+        "GM-HRL-v2-shuffle": {
+          "wv": 0.09219246031746031,
+          "stat_viol": 0.2125,
+          "routine_viol": 0.012592592592592591,
+          "w_tardiness": 24.32366129959384,
+          "makespan_over_lb": 1.1021456567156538,
+          "sla_violation_rate": 0.5607509028204702,
+          "latency_ms_mean": 0.9041781308441867,
+          "p_wv_vs_v2": 0.892738400944348
+        },
+        "GNN-PPO": {
+          "wv": 0.08808531746031746,
+          "stat_viol": 0.20555555555555555,
+          "routine_viol": 0.012777777777777777,
+          "w_tardiness": 27.071206756096938,
+          "makespan_over_lb": 1.1088497370218322,
+          "sla_violation_rate": 0.562993995530056,
+          "latency_ms_mean": 0.7176361483030369,
+          "p_wv_vs_v2": 0.9187074054282889
+        },
+        "HEFT": {
+          "wv": 0.11705357142857145,
+          "stat_viol": 0.2458333333333333,
+          "routine_viol": 0.021111111111111112,
+          "w_tardiness": 29.498277127280993,
+          "makespan_over_lb": 1.082261286478666,
+          "sla_violation_rate": 0.5431543066766695,
+          "latency_ms_mean": 0.018317533783058955,
+          "p_wv_vs_v2": 0.09289194088370532
+        },
+        "PPO": {
+          "wv": 0.1026686507936508,
+          "stat_viol": 0.23333333333333325,
+          "routine_viol": 0.00537037037037037,
+          "w_tardiness": 26.449852535678854,
+          "makespan_over_lb": 1.1049882674417448,
+          "sla_violation_rate": 0.5653652684354282,
+          "latency_ms_mean": 0.488874805316759,
+          "p_wv_vs_v2": 0.13481751128178945
+        },
+        "WEDF": {
+          "wv": 0.0812202380952381,
+          "stat_viol": 0.19583333333333333,
+          "routine_viol": 0.010555555555555556,
+          "w_tardiness": 21.70194205572468,
+          "makespan_over_lb": 1.1059927263241256,
+          "sla_violation_rate": 0.5667710225866426,
+          "latency_ms_mean": 0.01836325576944975,
+          "p_wv_vs_v2": 0.49896229860376107
+        }
+      }
+    },
+    "video": {
+      "n_pairs": 20,
+      "M1": {
+        "goal_changed": 0.028222469166264374,
+        "pass": false
+      },
+      "M2": {
+        "wv_own": 0.10822916666666664,
+        "wv_shuffle": 0.1085763888888889,
+        "p": 0.7994953618696918,
+        "pass": false,
+        "secondary_random": {
+          "wv_random": 0.10510416666666667,
+          "p": 0.5754030229127536
+        }
+      },
+      "H1": {
+        "mean": 0.10822916666666664,
+        "mean_ref": 0.10145833333333334,
+        "rel_reduction": -0.06673511293634449,
+        "p": 0.7259636262501574,
+        "pass": false
+      },
+      "H2": {
+        "mean": 0.10822916666666664,
+        "mean_ref": 0.08427083333333334,
+        "rel_reduction": -0.2843016069221258,
+        "p": 0.10000585418791465,
+        "pass": false
+      },
+      "methods": {
+        "EDF": {
+          "wv": 0.08479166666666667,
+          "stat_viol": 0.15,
+          "routine_viol": 0.025202020202020205,
+          "w_tardiness": 18.857262605150346,
+          "makespan_over_lb": 1.0932456258466725,
+          "sla_violation_rate": 0.568492616862504,
+          "latency_ms_mean": 0.020884829228584766,
+          "p_wv_vs_v2": 0.06370550596482119
+        },
+        "FIFO": {
+          "wv": 0.17583333333333334,
+          "stat_viol": 0.265,
+          "routine_viol": 0.05494949494949495,
+          "w_tardiness": 53.506726502672265,
+          "makespan_over_lb": 1.0921236750498877,
+          "sla_violation_rate": 0.5640223895162882,
+          "latency_ms_mean": 0.0006414505370123122,
+          "p_wv_vs_v2": 0.10544346013099624
+        },
+        "GA": {
+          "wv": 0.09468750000000001,
+          "stat_viol": 0.16,
+          "routine_viol": 0.03075757575757576,
+          "w_tardiness": 20.283168769666336,
+          "makespan_over_lb": 1.0885368624124836,
+          "sla_violation_rate": 0.5645426819680245,
+          "latency_ms_mean": 0.05338736889115055,
+          "p_wv_vs_v2": 0.07118923429208965
+        },
+        "GM-HRL": {
+          "wv": 0.1054513888888889,
+          "stat_viol": 0.15944444444444444,
+          "routine_viol": 0.05418229918229918,
+          "w_tardiness": 22.754066358210714,
+          "makespan_over_lb": 1.092433270343867,
+          "sla_violation_rate": 0.5587002665321412,
+          "latency_ms_mean": 0.8632844096681428,
+          "p_wv_vs_v2": 0.7596144888058398
+        },
+        "GM-HRL-v2": {
+          "wv": 0.10822916666666664,
+          "stat_viol": 0.16777777777777778,
+          "routine_viol": 0.06007455507455507,
+          "w_tardiness": 20.682042605232546,
+          "makespan_over_lb": 1.1008735139505812,
+          "sla_violation_rate": 0.5644971741137599,
+          "latency_ms_mean": 0.8652950774971225
+        },
+        "GM-HRL-v2-random": {
+          "wv": 0.10510416666666667,
+          "stat_viol": 0.16777777777777778,
+          "routine_viol": 0.05877585377585377,
+          "w_tardiness": 20.72613766973611,
+          "makespan_over_lb": 1.097834881036865,
+          "sla_violation_rate": 0.5649830796776771,
+          "latency_ms_mean": 0.8547577189898885,
+          "p_wv_vs_v2": 0.5754030229127536
+        },
+        "GM-HRL-v2-shuffle": {
+          "wv": 0.1085763888888889,
+          "stat_viol": 0.17111111111111113,
+          "routine_viol": 0.05757335257335257,
+          "w_tardiness": 20.126626746449684,
+          "makespan_over_lb": 1.0980909128412113,
+          "sla_violation_rate": 0.5615792838260109,
+          "latency_ms_mean": 0.909046312844693,
+          "p_wv_vs_v2": 0.7994953618696918
+        },
+        "GNN-PPO": {
+          "wv": 0.10145833333333334,
+          "stat_viol": 0.17222222222222222,
+          "routine_viol": 0.05605820105820105,
+          "w_tardiness": 21.780916147526387,
+          "makespan_over_lb": 1.0922214942790212,
+          "sla_violation_rate": 0.5614604460151708,
+          "latency_ms_mean": 0.7231054390775277,
+          "p_wv_vs_v2": 0.7259636262501574
+        },
+        "HEFT": {
+          "wv": 0.24770833333333334,
+          "stat_viol": 0.43499999999999994,
+          "routine_viol": 0.10754689754689753,
+          "w_tardiness": 133.63354403402627,
+          "makespan_over_lb": 1.075171023480166,
+          "sla_violation_rate": 0.5441297134133047,
+          "latency_ms_mean": 0.020543977607426628,
+          "p_wv_vs_v2": 0.0009350911193154891
+        },
+        "PPO": {
+          "wv": 0.10145833333333334,
+          "stat_viol": 0.16166666666666668,
+          "routine_viol": 0.048795093795093794,
+          "w_tardiness": 22.009131994482065,
+          "makespan_over_lb": 1.0958322251670254,
+          "sla_violation_rate": 0.5660532282642252,
+          "latency_ms_mean": 0.49503290920398857,
+          "p_wv_vs_v2": 0.40081416938293446
+        },
+        "WEDF": {
+          "wv": 0.08427083333333334,
+          "stat_viol": 0.13333333333333333,
+          "routine_viol": 0.05456709956709956,
+          "w_tardiness": 16.63768870894024,
+          "makespan_over_lb": 1.0950394283951925,
+          "sla_violation_rate": 0.5693201908790717,
+          "latency_ms_mean": 0.020979222571063137,
+          "p_wv_vs_v2": 0.10000585418791465
+        }
+      }
+    }
+  },
+  "result": {
+    "M1": false,
+    "M2": false,
+    "H1": false,
+    "H2": false
+  },
+  "interpretation": "the lower level ignores the goal; the interface does not work"
+}
