@@ -1,0 +1,48 @@
+%% =====================================================================
+%% §6.3, second batch. Written 2026-11-12 BEFORE any batch-2 result exists
+%% (runs started 16:02). Pre-registration: REALRUN2_SPEC.md, commit 7f6fef2.
+%% [RESULT] = number from realruns2/ (analyze output). Keep exactly ONE of
+%% the blocks P1_HOLDS / P1_FAILS (P1: GM-HRL has the lowest task-level
+%% SLA violation rate of the three schedulers).
+%% =====================================================================
+
+%% (1) Insert after the paragraph "Results." of §6.3 (before "Two limitations"):
+
+\paragraph{Second, independent batch.}
+To check the results on samples that played no part in the set-up, we ran a second batch of 50 new individuals from the same data set, drawn with a different seed after excluding the 50 samples of the first batch and the 5 pilot samples. Everything else was kept: stages, resource requests, duration estimates, branch rule and threshold ($\tau = 0.10$, no new pilot), arrival process, SLA threshold and the GM-HRL policy. Each scheduler processed the batch once, in the order HEFT, GM-HRL, FIFO. The protocol, including the criterion that GM-HRL should again have the lowest task-level SLA violation rate, was committed to the repository before the samples were drawn (\texttt{REALRUN2\_SPEC.md}, commit \texttt{7f6fef2}). The batch generated [RESULT] tasks, of which [RESULT] were revealed at run time; [RESULT] of the 50 samples ([RESULT]\%) exceeded the threshold.
+
+%% P1_HOLDS %% ---------------------------------------------------------
+The pre-specified criterion holds: GM-HRL again has the lowest task-level SLA violation rate ([RESULT]\%, against [RESULT]\% for FIFO and [RESULT]\% for HEFT), and its sample-level violation rate is [RESULT]\% against [RESULT]\% and [RESULT]\%. Its makespan is [RESULT]\,h, [RESULT]\% [shorter/longer] than that of HEFT ([RESULT]\,h) and [RESULT]\% [shorter/longer] than that of FIFO ([RESULT]\,h); the mean sample response time is [RESULT]\,h against [RESULT]\,h and [RESULT]\,h. [One sentence: whether the makespan ordering of batch 1 (GM-HRL $\approx$ FIFO $<$ HEFT) is repeated.] With three runs on two independent batches, the lower SLA violation rate of GM-HRL is the most consistent result of the real-pipeline experiment.
+%% end P1_HOLDS %% -----------------------------------------------------
+
+%% P1_FAILS %% ---------------------------------------------------------
+The pre-specified criterion does not hold: on the second batch, [FIFO/HEFT] has the lowest task-level SLA violation rate ([RESULT]\%), against [RESULT]\% for GM-HRL and [RESULT]\% for [HEFT/FIFO]; at the sample level the rates are [RESULT]\%, [RESULT]\% and [RESULT]\%. The makespan of GM-HRL is [RESULT]\,h against [RESULT]\,h for HEFT and [RESULT]\,h for FIFO, and its mean sample response time [RESULT]\,h against [RESULT]\,h and [RESULT]\,h. The advantage of GM-HRL in SLA violations observed on the first batch is therefore not confirmed on new samples; [one sentence on the likely reason, based only on the logged data, e.g. branching rate or realised durations of batch 2, stated as a possibility].
+%% end P1_FAILS %% -----------------------------------------------------
+
+%% (2) Table~\ref{tab:real}: add three rows below the existing six, after
+%%     \midrule, with the label "Batch 2" in the Run column:
+%%  FIFO   & B2 & [RESULT] & [RESULT] & [RESULT] & [RESULT] & [RESULT] & [RESULT] & [RESULT] / [RESULT] & [RESULT] \\
+%%  HEFT   & B2 & ...
+%%  GM-HRL & B2 & ...
+%%     and extend the caption: "B2: second batch of 50 new samples, one run per
+%%     scheduler in the order HEFT, GM-HRL, FIFO (pre-registered, commit 7f6fef2)."
+
+%% (3) Limitations paragraph of §6.3, first sentence, replace
+%%     "First, with two runs per scheduler no test can reach significance: ... 0.25."
+%%     by
+%%     "First, with three runs per scheduler on two batches no test can reach
+%%      significance: even if one scheduler is better in all three runs, the
+%%      smallest attainable one-sided $p$-value of an exact sign test is 0.125."
+
+%% (4) Abstract, last sentence (both versions keep the 250-word limit):
+%%  P1_HOLDS: "On 50 real genomic samples, GM-HRL has the lowest SLA violation
+%%             rates in two runs, and again on a second, pre-registered batch of
+%%             50 new samples; its makespan is ..." (rest unchanged)
+%%  P1_FAILS: "On 50 real genomic samples, GM-HRL has the lowest SLA violation
+%%             rates in two runs, but not on a second, pre-registered batch of
+%%             50 new samples; its makespan is ..." (rest unchanged)
+%%  Highlight 5: P1_HOLDS -> "On real samples, lowest SLA violations in all three runs on two batches"
+%%               (check <= 85 characters); P1_FAILS -> rewrite to the makespan or drop the SLA claim.
+
+%% (5) Conclusions (v): add "and on a second, pre-registered batch" (P1_HOLDS)
+%%     or "; on a second, pre-registered batch this advantage was not confirmed" (P1_FAILS).
