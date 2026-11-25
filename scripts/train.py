@@ -11,9 +11,13 @@ multi-workflow batches k = 100.., model selection uses batches k = 60..64
 batches k = 50..54 are left for the pre-registered decision. Every variant
 then gets the workflow features and the deadline reward term (w6 = 1).
 
+GM-HRL v3 (HIERARCHY_SPEC_v3.md): --variant gmhrl_v3, with --lambda_res,
+--eta_cap, --w_r. The Meta-Controller outputs a resource-level goal r_t in
+[0,1]^4; see agent.py.
+
 Example:
   python scripts/train.py --variant gmhrl --domains genomic --N 50 --iters 300 --out runs/gmhrl_genomic_N50_s0 --seed 0
-  python scripts/train.py --variant gmhrl_v2 --mw_K 12 --stat_share 0.2 --expert wedf --domains genomic ...
+  python scripts/train.py --variant gmhrl_v3 --mw_K 12 --stat_share 0.2 --expert wedf --domains genomic ...
 """
 import argparse
 import json
@@ -40,18 +44,18 @@ VARIANTS = {
     "no_gnn": {"use_gnn": False},
     "no_dynamic_graph": {"dynamic_graph": False},
     "ppo": {"hierarchical": False, "use_gnn": False},
-    # single-level GNN + PPO dispatcher in the style of Zhang et al. (2020);
-    # same network as the no_hierarchy ablation, trained on every (domain, N)
     "gnn_ppo": {"hierarchical": False},
-    # GM-HRL with capacity reservation for runtime-revealed work (RESERVATION_SPEC.md)
     "gmhrl_res": {"reserve": True},
     "no_gnn_res": {"use_gnn": False, "reserve": True},
     "no_dynamic_graph_res": {"dynamic_graph": False, "reserve": True},
-    # GM-HRL v2 (HIERARCHY_SPEC.md, MD2POS-MW only): goal per workflow, eta2 = 1, Meta-Controller BC
     "gmhrl_v2": {"goal_mode": "workflow", "meta_bc": True},
+    "gmhrl_v3": {"goal_mode": "none", "res_goal": True},
 }
-VARIANT_REWARD = {"gmhrl_v2": {"eta2": 1.0}}
-MW_ONLY = {"gmhrl_v2"}
+VARIANT_REWARD = {
+    "gmhrl_v2": {"eta2": 1.0},
+    "gmhrl_v3": {"eta2": 0.0},   # eta_cap and w_r come from --eta_cap / --w_r
+}
+MW_ONLY = {"gmhrl_v2", "gmhrl_v3"}
 
 
 def parse():
@@ -59,7 +63,7 @@ def parse():
     p.add_argument("--variant", default="gmhrl", choices=list(VARIANTS))
     p.add_argument("--domains", nargs="+", default=["genomic"])
     p.add_argument("--N", nargs="+", type=int, default=[50])
-    p.add_argument("--n_train", type=int, default=100, help="training instances per (domain, N)")
+    p.add_argument("--n_train", type=int, default=100)
     p.add_argument("--n_val", type=int, default=5)
     p.add_argument("--iters", type=int, default=300)
     p.add_argument("--episodes_per_iter", type=int, default=4)
@@ -74,15 +78,15 @@ def parse():
     p.add_argument("--sla_factor", type=float, default=4.0)
     p.add_argument("--rrd_mult", type=float, default=1.0)
     p.add_argument("--cap_scale", type=float, default=1.0)
-    p.add_argument("--mw_K", type=int, default=0, help="MD2POS-MW batches of K workflows (0 = benchmark instances)")
+    p.add_argument("--mw_K", type=int, default=0)
     p.add_argument("--stat_share", type=float, default=0.2)
-    p.add_argument("--expert", default="heft", choices=["heft", "wedf"], help="behaviour-cloning expert")
+    p.add_argument("--expert", default="heft", choices=["heft", "wedf"])
     # reward
     p.add_argument("--kappa", type=float, default=1.0)
     p.add_argument("--w", nargs=4, type=float, default=[1.0, 0.1, 1.0, 0.1])
     p.add_argument("--eta", nargs=3, type=float, default=[1.0, 0.1, 0.1])
-    p.add_argument("--w5", type=float, default=0.0, help="response-time shaping weight (0 = off)")
-    p.add_argument("--w6", type=float, default=None, help="workflow deadline-miss weight (default 1 with --mw_K, else 0)")
+    p.add_argument("--w5", type=float, default=0.0)
+    p.add_argument("--w6", type=float, default=None)
     # agent
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--d", type=int, default=64)
@@ -90,10 +94,14 @@ def parse():
     p.add_argument("--d_g", type=int, default=8)
     p.add_argument("--alt_period", type=int, default=5)
     p.add_argument("--meta_interval_factor", type=float, default=2.0)
-    p.add_argument("--init", default=None, help="checkpoint to start from (e.g. curriculum)")
-    p.add_argument("--bc_iters", type=int, default=0, help="behaviour-cloning iterations (expert: HEFT)")
-    p.add_argument("--critic_warmup", type=int, default=0, help="PPO iterations with value loss only")
+    p.add_argument("--init", default=None)
+    p.add_argument("--bc_iters", type=int, default=0)
+    p.add_argument("--critic_warmup", type=int, default=0)
     p.add_argument("--ent_coef", type=float, default=0.01)
+    # v3
+    p.add_argument("--lambda_res", type=float, default=1.0)
+    p.add_argument("--eta_cap", type=float, default=0.0)
+    p.add_argument("--w_r", type=float, default=0.0)
     return p.parse_args()
 
 
@@ -109,14 +117,13 @@ def evaluate(agent, sims, seeds, mw=False):
     keys = ("makespan_over_lb", "sla_violation_rate", "util_cpu", "latency_ms_mean") + \
         (("wv", "w_tardiness") if mw else ())
     ev = {k: float(np.mean([r[k] for r in rows])) for k in keys}
-    # model selection score: makespan/LB (benchmark) or WV with makespan/LB as tie-break (MD2POS-MW)
     ev["score"] = ev["wv"] + 1e-3 * ev["makespan_over_lb"] if mw else ev["makespan_over_lb"]
     return ev
 
 
 def main():
     a = parse()
-    if (Path(a.out) / 'last.pt').exists():  # finished by another runner
+    if (Path(a.out) / 'last.pt').exists():
         print('skip: already trained', a.out); return
 
     if a.threads:
@@ -138,6 +145,11 @@ def main():
                         eta1=a.eta[0], eta2=a.eta[1], eta3=a.eta[2], w5=a.w5, w6=w6)
     for k_, v_ in VARIANT_REWARD.get(a.variant, {}).items():
         setattr(rcfg, k_, v_)
+    # v3: three hyperparameters from the command line (selected on validation)
+    if a.variant == "gmhrl_v3":
+        acfg.lambda_res = a.lambda_res
+        rcfg.eta_cap = a.eta_cap
+        rcfg.w_r = a.w_r
     agent = GMHRLAgent(acfg, rcfg)
     if a.init:
         agent.net.load_state_dict(GMHRLAgent.load(a.init, a.device).net.state_dict())
@@ -193,16 +205,20 @@ def main():
                "train_makespan_over_lb": float(np.mean([e["metrics"]["makespan_over_lb"] for e in eps])),
                "train_sla": float(np.mean([e["metrics"]["sla_violation_rate"] for e in eps])),
                "train_return": float(np.mean([e["metrics"]["return_sub"] for e in eps]))}
+        if a.variant == "gmhrl_v3":
+            rtr = [e["metrics"].get("r_t_range", 0.0) for e in eps]
+            rec["train_r_t_range"] = float(np.mean(rtr))
         if (it + 1) % a.eval_every == 0 or it == a.iters - 1:
             ev = evaluate(agent, val_sims, val_seeds, mw)
             rec.update({f"val_{k}": v for k, v in ev.items()})
-            score = ev["score"]   # model selection on the primary objective
+            score = ev["score"]
             if score < best:
                 best = score
                 agent.save(str(out / "best.pt"), {"iter": it, "val": ev})
             print(f"[{a.variant}] it {it+1}/{a.iters} {rec['time_s']}s phase={st.get('phase')} "
                   f"train mk/LB={rec['train_makespan_over_lb']:.3f} val mk/LB={ev['makespan_over_lb']:.3f} "
-                  f"val SLA={ev['sla_violation_rate']:.3f}" + (f" val WV={ev['wv']:.3f}" if mw else ""), flush=True)
+                  f"val SLA={ev['sla_violation_rate']:.3f}" + (f" val WV={ev['wv']:.3f}" if mw else "")
+                  + (f" r_t_range={rec['train_r_t_range']:.3f}" if a.variant == "gmhrl_v3" else ""), flush=True)
         log.write(json.dumps(rec) + "\n")
         log.flush()
     agent.save(str(out / "last.pt"), {"iter": a.iters - 1})

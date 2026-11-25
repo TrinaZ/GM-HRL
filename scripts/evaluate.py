@@ -17,13 +17,29 @@ Methods:
 
 MD2POS-MW: with --mw_K K the instances are multi-workflow batches k (from
 --data, generated if missing) and the workflow metrics (wv, stat_viol,
-routine_viol, w_tardiness) are added; --goal_measure records the M1 share of
-decisions that change under the neutral goal (column goal_changed).
+routine_viol, w_tardiness) are added.
+
+--goal_measure MODE records the M1 share of decisions that change under a
+neutral goal (column goal_changed). MODE is one of:
+  own          no diagnostic (default); column goal_changed is empty
+  neutral      M1 (v1.0/v2): Sub decisions change when the node goal attribute
+               is replaced by 0.5; applies to models executed with @own
+  shuffle      M1 companion: shuffle workflow goals at test time (v2 only)
+  random       M1 companion: replace g by N(0,I) at every Meta decision (v2 only)
+  res_neutral  M1' (v3): Sub decisions change when r_t is replaced by 1;
+               requires a v3 checkpoint (cfg.res_goal=True)
+The global --goal_measure is overridden per model only by the @MODE suffix
+(execution mode). res_neutral has no @suffix form: it is a global measurement.
 
 Example:
   python scripts/evaluate.py --domains genomic --N 50 \
       --methods FIFO SJF HEFT Random GM-HRL=runs/gmhrl_genomic_N50_s0/best.pt \
       --seeds 1000 1001 1002 --bound --bound_time 300 --out results/genomic_N50
+  python scripts/evaluate.py --mw_K 12 --domains genomic \
+      --methods FIFO HEFT EDF WEDF GNN-PPO=runs/gnn_ppo_mw/best.pt \
+                GM-HRL-v2=runs/gmhrl_v2_mw/best.pt \
+                GM-HRL-v3=runs/gmhrl_v3_mw/best.pt \
+      --goal_measure res_neutral --seeds 1000 1001 1002 --out results/mw_v3
 """
 import argparse
 import csv
@@ -50,9 +66,12 @@ METRICS = ("makespan", "makespan_over_lb", "sla_violation_rate", "util_cpu", "ut
            "util_disk", "mean_wait", "mean_response", "n_rrd_events", "n_dynamic_tasks",
            "latency_ms_mean", "latency_ms_p95")
 MW_METRICS = ("wv", "stat_viol", "routine_viol", "w_tardiness", "n_stat", "goal_changed")
-# reservation diagnostics (GM-HRL+R only; empty for other methods, not summarised)
 RES_METRICS = ("res_share_decisions", "res_mean_frac", "res_blocked_pairs", "res_blocked_tasks",
                "res_used_frac_sum", "res_released_frac_sum", "res_aged_bypass", "res_liveness_bypass")
+# v3 diagnostics written by agent.py in the metrics dict
+V3_METRICS = ("r_t_range", "r_t_mean")   # r_t_mean is a list; not written to runs.csv
+
+_GOAL_MODES = ("own", "neutral", "shuffle", "random", "res_neutral")
 
 
 def parse():
@@ -76,7 +95,8 @@ def parse():
     p.add_argument("--mw_K", type=int, default=0, help="MD2POS-MW batches of K workflows")
     p.add_argument("--stat_share", type=float, default=0.2)
     p.add_argument("--data", default=str(ROOT / "data" / "generated"), help="root of generated MD2POS-MW batches")
-    p.add_argument("--goal_measure", action="store_true", help="M1: record goal_changed for hierarchical models")
+    p.add_argument("--goal_measure", default="own", choices=list(_GOAL_MODES),
+                   help="M1/M1' diagnostic to record (see module docstring)")
     p.add_argument("--out", required=True)
     p.add_argument("--res_log", action="store_true",
                    help="write the per-decision reservation log of every GM-HRL+R run to <out>/res_logs/")
@@ -108,6 +128,7 @@ def build_methods(specs, device):
             mode = "own"
             if "@" in path:
                 path, mode = path.rsplit("@", 1)
+                # execution modes only; res_neutral is a global measurement (--goal_measure)
                 assert mode in ("own", "neutral", "shuffle", "random"), mode
             ag = GMHRLAgent.load(path, device)
             ag.goal_test = mode
@@ -135,6 +156,32 @@ def run_one(kind, obj, sim, seed):
     return m
 
 
+def _configure_goal_diagnostic(agent, name, a):
+    """Set agent.measure_goal / agent.measure_res_neutral from --goal_measure.
+
+    - res_neutral: requires cfg.res_goal; measures M1' (r_t vs 1)
+    - neutral / shuffle / random: measures M1 (node goal vs 0.5), only if the
+      model is executed with @own (goal_test == 'own')
+    - own: no diagnostic
+    """
+    if a.goal_measure == "res_neutral":
+        if not getattr(agent.cfg, "res_goal", False):
+            raise SystemExit(
+                f"{name}: --goal_measure res_neutral requires a v3 checkpoint "
+                f"(cfg.res_goal=True); this checkpoint has res_goal=False. "
+                f"Use --goal_measure neutral for the v1.0/v2 node-goal diagnostic."
+            )
+        agent.measure_goal = False
+        agent.measure_res_neutral = True
+    elif a.goal_measure in ("neutral", "shuffle", "random"):
+        # M1 requires the model to be executed with its own goal
+        agent.measure_goal = (agent.goal_test == "own")
+        agent.measure_res_neutral = False
+    else:  # "own"
+        agent.measure_goal = False
+        agent.measure_res_neutral = False
+
+
 def main():
     a = parse()
     out = Path(a.out)
@@ -142,11 +189,11 @@ def main():
     scfg = SimConfig(rho=a.rho, sla_factor=a.sla_factor, rrd_mult=a.rrd_mult, cap_scale=a.cap_scale)
     methods = build_methods(a.methods, a.device)
     mw = a.mw_K > 0
-    for kind, obj in methods.values():
+    for name, (kind, obj) in methods.items():
         if kind == "model":
-            assert obj.cfg.mw == mw, "model and instances disagree on MD2POS-MW"
-            obj.measure_goal = bool(a.goal_measure and obj.goal_test == "own")
-    metric_keys = METRICS + (MW_METRICS if mw else ())
+            assert obj.cfg.mw == mw, f"{name}: model and instances disagree on MD2POS-MW"
+            _configure_goal_diagnostic(obj, name, a)
+    metric_keys = METRICS + (MW_METRICS if mw else ()) + V3_METRICS
     rows = []
     bound_rows = []
     reuse = {}
@@ -158,7 +205,7 @@ def main():
             if mw:      # N column holds K for MD2POS-MW batches
                 paths = dict(zip(a.instances, write_split_mw(a.data, dom, a.mw_K, a.stat_share, a.instances)))
             else:
-                paths = {int(p.stem[-4:]): p for p in instance_paths(a.bench, dom, N)}  # k -> file (instance_seedKKKK)
+                paths = {int(p.stem[-4:]): p for p in instance_paths(a.bench, dom, N)}
             for k in a.instances:
                 inst = load_instance(paths[k])
                 sim = MD2POSSim(inst, scfg, seed=0)
@@ -181,9 +228,13 @@ def main():
                                            "best_LB": lb})
                     for name, (kind, obj) in methods.items():
                         m = run_one(kind, obj, sim, seed)
-                        rows.append({"method": name, "domain": dom, "N": N, "k": k, "seed": seed,
-                                     **{key: m.get(key, "") for key in metric_keys},
-                                     **{key: m.get(key, "") for key in RES_METRICS}})
+                        row = {"method": name, "domain": dom, "N": N, "k": k, "seed": seed,
+                               **{key: m.get(key, "") for key in metric_keys},
+                               **{key: m.get(key, "") for key in RES_METRICS}}
+                        # r_t_mean is a list; keep it in a separate JSONL for reproducibility
+                        if "r_t_mean" in m:
+                            row["r_t_mean"] = m["r_t_mean"]
+                        rows.append(row)
                         res = getattr(obj, "last_reservation", None) if kind == "model" else None
                         if a.res_log and res is not None:
                             lp = out / "res_logs" / f"{name}_{dom}_N{N}_k{k}_s{seed}.jsonl"
@@ -202,16 +253,26 @@ def main():
         for r in rows:
             lb = lbmap[(r["domain"], r["N"], r["k"], r["seed"])]
             r["gap_to_clairvoyant_LB"] = (r["makespan"] - lb) / lb
+
+    # r_t_mean is a list, not a CSV-friendly scalar; drop it from runs.csv and
+    # write a sidecar file with the per-run mean r_t per resource (v3 only).
+    r_t_sidecar = out / "r_t_mean.csv"
+    v3_rows = [r for r in rows if isinstance(r.get("r_t_mean"), list)]
+    if v3_rows:
+        with open(r_t_sidecar, "w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["method", "domain", "N", "k", "seed"] + [f"r_t_mean_{j}" for j in range(len(v3_rows[0]["r_t_mean"]))])
+            for r in v3_rows:
+                w.writerow([r["method"], r["domain"], r["N"], r["k"], r["seed"]] + r["r_t_mean"])
+    for r in rows:
+        if "r_t_mean" in r and isinstance(r["r_t_mean"], list):
+            del r["r_t_mean"]
+
     with open(out / "runs.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
 
-    if not bound_rows:
-        with open(out / "runs.csv", "w", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-            w.writeheader()
-            w.writerows(rows)
     names = list(methods)
     ref = a.ref or next((n for n in names if methods[n][0] == "model"), names[0])
     summ = {"config": {**vars(a), "sim": scfg.to_dict()}, "methods": {}}
@@ -220,6 +281,7 @@ def main():
     def _vals(R, k):
         v = np.array([float(r[k]) for r in R if r.get(k) not in ("", None)], dtype=float)
         return v[~np.isnan(v)]
+
     for n in names:
         R = [r for r in rows if r["method"] == n]
         summ["methods"][n] = {}
@@ -247,11 +309,16 @@ def main():
                            "mean_diff_ref_minus_other": float(np.mean(x - y))}
     summ["paired_tests_vs"] = ref
     summ["paired_tests"] = tests
+    summ["goal_measure"] = a.goal_measure   # remember which diagnostic was recorded
     json.dump(summ, open(out / "summary.json", "w"), indent=2)
 
-    print(f"\n{'method':16s} {'makespan':>10s} {'mk/LB':>7s} {'SLA':>7s} {'CPU':>6s}" +
-          (f" {'gap':>7s}" if bound_rows else "") + f" {'lat ms':>7s}" +
-          (f" {'WV':>6s} {'STAT':>6s} {'rout':>6s} {'chg':>6s}" if mw else ""))
+    header = (f"{'method':16s} {'makespan':>10s} {'mk/LB':>7s} {'SLA':>7s} {'CPU':>6s}"
+              + (f" {'gap':>7s}" if bound_rows else "") + f" {'lat ms':>7s}")
+    if mw:
+        header += f" {'WV':>6s} {'STAT':>6s} {'rout':>6s} {'chg':>6s}"
+    if a.goal_measure == "res_neutral":
+        header += f" {'r_t_rng':>8s}"
+    print("\n" + header)
     for n in names:
         s = summ["methods"][n]
         line = (f"{n:16s} {s['makespan']['mean']:10.1f} {s['makespan_over_lb']['mean']:7.3f} "
@@ -262,6 +329,8 @@ def main():
         if mw:
             g = lambda k: s[k]["mean"] if k in s else float("nan")  # noqa: E731
             line += f" {g('wv'):6.3f} {g('stat_viol'):6.3f} {g('routine_viol'):6.3f} {g('goal_changed'):6.3f}"
+        if a.goal_measure == "res_neutral":
+            line += f" {s.get('r_t_range', {}).get('mean', float('nan')):8.4f}"
         print(line)
     print(f"\npaired Wilcoxon tests vs {ref}:")
     for n, t in tests.items():
@@ -269,6 +338,7 @@ def main():
               f"{100*t['makespan'].get('ref_better_share', 0):.0f}% of runs); "
               f"SLA p={t['sla_violation_rate']['p_value']:.2g}" +
               (f"; WV p={t['wv']['p_value']:.2g}" if "wv" in t else ""))
+    print(f"\nwrote {out/'runs.csv'}, {out/'summary.json'}" + (f", {r_t_sidecar}" if v3_rows else ""))
 
 
 if __name__ == "__main__":

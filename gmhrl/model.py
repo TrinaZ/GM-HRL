@@ -27,6 +27,11 @@ goal is written per workflow, p_w = sigmoid(<W_g g, W_x x_w> / sqrt(d_g)), where
 x_w are the three workflow columns of the node features; all tasks of a
 workflow share these columns and therefore receive the same p_w.
 
+GM-HRL v3 (goal_mode="none", res_goal=True, HIERARCHY_SPEC_v3.md): no node
+goal attribute is written (GOAL_IDX fixed to 0.5); the high-level signal is
+the resource-level goal r_t = sigmoid(res_head(g)) in [0,1]^{n_resource}, used
+by agent.py to penalise Sub-Controller logits and to shape the Meta reward.
+
 Ablation switches: use_gnn=False replaces message passing by a per-node MLP
 (L layers, no neighbour aggregation); hierarchical=False removes the
 Meta-Controller (goal attribute fixed to 0.5).
@@ -99,11 +104,13 @@ class Encoder(nn.Module):
 class GMHRLNet(nn.Module):
     def __init__(self, d: int = 64, layers: int = 2, d_g: int = 8, hidden: int = 128,
                  use_gnn: bool = True, hierarchical: bool = True, n_res: int = 0,
-                 res_bias_init: float = -1.0, node_dim: int = NODE_DIM, goal_mode: str = "task"):
+                 res_bias_init: float = -1.0, node_dim: int = NODE_DIM, goal_mode: str = "task",
+                 res_goal: bool = False, n_resource: int = 4):
         super().__init__()
-        assert goal_mode in ("task", "workflow")
+        assert goal_mode in ("task", "workflow", "none")
         self.d, self.d_g, self.hierarchical, self.n_res = d, d_g, hierarchical, n_res
         self.goal_mode = goal_mode
+        self.res_goal, self.n_resource = res_goal, n_resource
         self.enc = Encoder(d, layers, use_gnn, node_dim)
         # goal writer
         self.Wg = nn.Linear(d_g, d_g, bias=False)
@@ -122,6 +129,12 @@ class GMHRLNet(nn.Module):
         self.sub_v = mlp(GLOBAL_DIM + d, hidden, 1)
         with torch.no_grad():                 # start from a (mostly) non-delay policy
             self.wait[-1].bias.fill_(-3.0)
+        # v3: resource-level goal head
+        if res_goal:
+            self.res_head = nn.Linear(d_g, n_resource)
+            with torch.no_grad():
+                self.res_head.weight.mul_(0.1)    # small init: r_t varies little at start
+                self.res_head.bias.fill_(2.0)     # sigmoid(2) ~ 0.88, close to "no cap"
 
     # --- goal written into the graph
     def write_goal(self, x: torch.Tensor, g: Optional[torch.Tensor],
@@ -131,6 +144,8 @@ class GMHRLNet(nn.Module):
         x = x.clone()
         if p_override is not None:
             x[:, GOAL_IDX] = p_override
+        elif self.goal_mode == "none":
+            x[:, GOAL_IDX] = 0.5
         elif not self.hierarchical or g is None:
             x[:, GOAL_IDX] = 0.5
         else:
@@ -173,3 +188,8 @@ class GMHRLNet(nn.Module):
     def goal_annotation(self, x, g):
         """Node goal attributes p_v (for Sim)."""
         return self.write_goal(x, g)[:, GOAL_IDX]
+
+    def resource_goal(self, g: torch.Tensor) -> torch.Tensor:
+        """v3: r_t = sigmoid(res_head(g)) in [0,1]^{n_resource}."""
+        assert self.res_goal, "resource_goal called on a model without res_goal=True"
+        return torch.sigmoid(self.res_head(g[..., :self.d_g]))
