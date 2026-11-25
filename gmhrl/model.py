@@ -133,8 +133,8 @@ class GMHRLNet(nn.Module):
         if res_goal:
             self.res_head = nn.Linear(d_g, n_resource)
             with torch.no_grad():
-                self.res_head.weight.mul_(0.1)    # small init: r_t varies little at start
-                self.res_head.bias.fill_(2.0)     # sigmoid(2) ~ 0.88, close to "no cap"
+                # v3.1: no weight scaling, bias 1.0 -> r_t init in [0.5, 0.95]
+                self.res_head.bias.fill_(1.0)
 
     # --- goal written into the graph
     def write_goal(self, x: torch.Tensor, g: Optional[torch.Tensor],

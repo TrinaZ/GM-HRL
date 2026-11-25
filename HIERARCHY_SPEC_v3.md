@@ -93,6 +93,23 @@ If that pilot also gives r_t_range < 0.05, the main runs are executed with
 the default values anyway, and the negative result is reported with the H3'
 diagnostic (Section 4). No other hyperparameter values are tried.
 
+## 3a. Amendment v3.1 (recorded before any main run)
+
+The v3.0 pilot (40 iterations, genomic, K = 12, s = 0.2, rho = 0.8,
+lambda_res = eta_cap = w_r = 1) gave r_t_range = 0.009 at iteration 40,
+below the H3' threshold of 0.05. Diagnosis: with res_head.weight scaled by
+0.1 and bias = 2.0, r_t is initialised at sigmoid(2.0) = 0.88, where the
+sigmoid derivative is 0.098; the gradient of the w_r loss is small and 40
+iterations (16 Meta updates) move r_t by less than 0.01. This is a design
+defect of the v3.0 initialisation, found in the pilot before any main run.
+
+v3.1 changes exactly one thing: res_head.weight is not scaled (default
+nn.Linear initialisation) and res_head.bias = 1.0, so that r_t is
+initialised in [0.5, 0.95] with the sigmoid derivative around 0.20. All
+other values (lambda_res = eta_cap = w_r = 1, architecture, budget,
+instances) are those of v3.0. The v3.0 pilot result (r_t_range = 0.009) is
+reported alongside the v3.1 pilot in Section 6.5.
+
 ## 4. Checks, hypotheses and decision rule
 
 Validation: genomic and video, main setting (K = 12, s = 0.2, rho = 0.8),
