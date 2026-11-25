@@ -90,6 +90,32 @@ python scripts/realrun.py run --spec my_pipeline.yaml --samples samples.tsv --po
 python scripts/realrun.py analyze realruns/b1_* --bound --bound_time 3600 --out realruns/summary
 ```
 
+## v3 Experiments (Resource-Level Hierarchy)
+
+The pre-registration protocol, design motivation and pilot results for v3 are documented in [`PROGRESS.md`](PROGRESS.md) and [`HIERARCHY_SPEC_v3.md`](HIERARCHY_SPEC_v3.md).
+v3 evaluates a high-level abstraction distinct from v1.0/v2: the Meta-Controller outputs per-resource target utilizations \(\boldsymbol{r}_t \in [0,1]^4\), and the Sub-Controller logits are penalized by \(|\text{util}_{\text{after}} - \boldsymbol{r}_t|\).
+The protocol was committed at `5d0ed71` (v3.1) prior to running any training.
+
+Key differences of v3 relative to v1.0/v2:
+
+- `--variant gmhrl_v3` (`goal_mode="none"`, `res_goal=True`)
+- New arguments `--lambda_res`, `--eta_cap`, `--w_r` (default = 1.0, fixed)
+- `evaluate.py --goal_measure res_neutral` (diagnosis for M1')
+- `train_log.jsonl` includes the new field `train_r_t_range` (diagnosis for H3')
+
+Reproduction:
+
+```
+# pilot run (40 iterations, ~6 minutes on CPU)
+python3 scripts/train.py --variant gmhrl_v3 --mw_K 12 --stat_share 0.2 \
+  --expert wedf --domains genomic --n_train 20 --iters 40 --episodes_per_iter 4 \
+  --bc_iters 10 --critic_warmup 2 --lambda_res 1 --eta_cap 1 --w_r 1 \
+  --out runs/v3_pilot_v31 --device cpu
+
+# full training run (400 iterations, ~2.5–3 hours per run)
+# see Section 8 in PROGRESS.md
+```
+
 ## Licence
 
 Code: MIT (see `LICENSE`). Benchmark data: CC BY 4.0.
