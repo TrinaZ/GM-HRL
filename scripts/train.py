@@ -102,6 +102,7 @@ def parse():
     p.add_argument("--lambda_res", type=float, default=1.0)
     p.add_argument("--eta_cap", type=float, default=0.0)
     p.add_argument("--w_r", type=float, default=0.0)
+    p.add_argument("--sub_obs", default="full", choices=["full", "myopic"])
     return p.parse_args()
 
 

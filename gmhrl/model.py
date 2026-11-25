@@ -105,12 +105,14 @@ class GMHRLNet(nn.Module):
     def __init__(self, d: int = 64, layers: int = 2, d_g: int = 8, hidden: int = 128,
                  use_gnn: bool = True, hierarchical: bool = True, n_res: int = 0,
                  res_bias_init: float = -1.0, node_dim: int = NODE_DIM, goal_mode: str = "task",
-                 res_goal: bool = False, n_resource: int = 4):
+                 res_goal: bool = False, n_resource: int = 4, sub_obs: str = "full"):
         super().__init__()
         assert goal_mode in ("task", "workflow", "none")
         self.d, self.d_g, self.hierarchical, self.n_res = d, d_g, hierarchical, n_res
         self.goal_mode = goal_mode
         self.res_goal, self.n_resource = res_goal, n_resource
+        assert sub_obs in ("full", "myopic")
+        self.sub_obs = sub_obs
         self.enc = Encoder(d, layers, use_gnn, node_dim)
         # goal writer
         self.Wg = nn.Linear(d_g, d_g, bias=False)
@@ -159,7 +161,11 @@ class GMHRLNet(nn.Module):
         return x
 
     def encode(self, x, ei, ea, g, p_override=None):
-        return self.enc(self.write_goal(x, g, p_override), ei, ea)
+        x_g = self.write_goal(x, g, p_override)
+        if getattr(self, "sub_obs", "full") == "myopic":
+            x_g = x_g.clone()
+            x_g[:, WF_IDX:WF_IDX + WF_DIM] = 0.0
+        return self.enc(x_g, ei, ea)
 
     # --- meta
     def meta_dist(self, s, z):
@@ -170,6 +176,9 @@ class GMHRLNet(nn.Module):
 
     # --- sub
     def sub_logits(self, h, z, s, cand, can_wait: bool):
+        if getattr(self, "sub_obs", "full") == "myopic":
+            s = torch.zeros_like(s)
+            z = torch.zeros_like(z)
         c = self.ctx(s).expand(len(cand), -1)
         lt = self.score(torch.cat([h[cand], c], -1)).squeeze(-1)
         lw = self.wait(torch.cat([s, z], -1))

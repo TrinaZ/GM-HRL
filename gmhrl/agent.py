@@ -102,6 +102,7 @@ class AgentConfig:
     res_goal: bool = False
     n_resource: int = 4
     lambda_res: float = 1.0
+    sub_obs: str = "full"
 
 
 def _snap(sim: MD2POSSim):
@@ -162,7 +163,7 @@ class GMHRLAgent:
                             cfg.use_gnn, cfg.hierarchical, n_res=1 if self.use_res else 0,
                             node_dim=NODE_DIM_MW if cfg.mw else NODE_DIM,
                             goal_mode=cfg.goal_mode,
-                            res_goal=cfg.res_goal, n_resource=cfg.n_resource).to(cfg.device)
+                            res_goal=cfg.res_goal, n_resource=cfg.n_resource, sub_obs=getattr(cfg, "sub_obs", "full")).to(cfg.device)
         self.goal_test = "own"
         self.measure_goal = False
         self.measure_res_neutral = False
