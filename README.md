@@ -116,6 +116,24 @@ python3 scripts/train.py --variant gmhrl_v3 --mw_K 12 --stat_share 0.2 \
 # see Section 8 in PROGRESS.md
 ```
 
+## Reproducing the paper's results
+
+| Claim | Location |
+|---|---|
+| Table 13 (main results, N=200/500) | `results/main_{genomic,video,ai_ft,financial}_N*/summary.json` |
+| Table 17 (asymmetric observability, K=12/30) | `results/mw_asym_{s0,K30_s0}/paired_in_domain.json` |
+| WEDF comparison | `results/mw_v3_full_wedf/summary.json` |
+| Replication on fresh instances | `data/replication/{domain}/N*/instance_seed03*.json` |
+| Fig. 6 timeline | `fig_timeline.pdf` |
+| Real WGS pipeline | `realruns2/` |
+| Trained checkpoints | not included; regenerate with `bash run_v2.sh` |
+
+## Metrics
+
+`wv` = weighted deadline-violation rate (weights 5:2:1 for
+STAT : routine : other), normalised by total task count.
+`stat_viol` / `rout_viol` = per-class violation rates.
+`latency_ms_mean` / `_p95` = per-decision wall-clock time.
 ## Licence
 
 Code: MIT (see `LICENSE`). Benchmark data: CC BY 4.0.
