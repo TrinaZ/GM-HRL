@@ -1,0 +1,334 @@
+{
+  "config": {
+    "methods": [
+      "HEFT",
+      "GA=runs/ga_financial_N200.json",
+      "GM-HRL-genomic=runs/gmhrl_genomic_N200_s0/best.pt",
+      "GM-HRL-in-domain=runs/gmhrl_financial_N200_s0/best.pt"
+    ],
+    "domains": [
+      "financial"
+    ],
+    "N": [
+      200
+    ],
+    "instances": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "seeds": [
+      1000,
+      1001,
+      1002
+    ],
+    "bench": "/mnt/e/ForPhD/Code/\u521b\u65b0\u70b92/GM-HRL-repo/GM-HRL/data/md2pos_benchmark",
+    "ref": "GM-HRL-genomic",
+    "rho": 0.8,
+    "sla_factor": 4.0,
+    "rrd_mult": 1.0,
+    "cap_scale": 1.0,
+    "bound": false,
+    "bound_time": 300,
+    "bound_workers": 8,
+    "bounds_csv": null,
+    "device": "cpu",
+    "out": "results/xdomain_financial",
+    "sim": {
+      "capacity": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "cap_scale": 1.0,
+      "m_per_type": 4,
+      "rho": 0.8,
+      "sla_factor": 4.0,
+      "sla": null,
+      "noise_sigma": 0.3,
+      "rrd_enabled": true,
+      "rrd_mult": 1.0,
+      "rrd_max_extra": 2,
+      "allow_wait": true
+    }
+  },
+  "methods": {
+    "HEFT": {
+      "makespan": {
+        "mean": 10150.415137568634,
+        "std": 708.8535449475105
+      },
+      "makespan_over_lb": {
+        "mean": 1.0594842175573413,
+        "std": 0.03836082950069702
+      },
+      "sla_violation_rate": {
+        "mean": 0.2289333876489677,
+        "std": 0.08941206780641821
+      },
+      "util_cpu": {
+        "mean": 0.7609059191893517,
+        "std": 0.04150708192194503
+      },
+      "util_ram": {
+        "mean": 0.6659896829558094,
+        "std": 0.032452820991226435
+      },
+      "util_gpu": {
+        "mean": 0.15303921321202557,
+        "std": 0.014879232789779533
+      },
+      "util_disk": {
+        "mean": 0.403255235620169,
+        "std": 0.023591903494021554
+      },
+      "mean_wait": {
+        "mean": 377.7944390536542,
+        "std": 109.78410159504587
+      },
+      "mean_response": {
+        "mean": 586.9322566262007,
+        "std": 111.68230371907276
+      },
+      "n_rrd_events": {
+        "mean": 23.25,
+        "std": 5.176953491932018
+      },
+      "n_dynamic_tasks": {
+        "mean": 34.75,
+        "std": 8.137848380941147
+      },
+      "latency_ms_mean": {
+        "mean": 0.31163350463304074,
+        "std": 0.11745741871652934
+      },
+      "latency_ms_p95": {
+        "mean": 0.7896087171199402,
+        "std": 0.7090574874686567
+      },
+      "n_runs": 60
+    },
+    "GA": {
+      "makespan": {
+        "mean": 10216.61014382184,
+        "std": 702.3321814699615
+      },
+      "makespan_over_lb": {
+        "mean": 1.066503158315459,
+        "std": 0.039412671583827746
+      },
+      "sla_violation_rate": {
+        "mean": 0.23188201603617156,
+        "std": 0.0872563051192644
+      },
+      "util_cpu": {
+        "mean": 0.7559794673155108,
+        "std": 0.04236945952385021
+      },
+      "util_ram": {
+        "mean": 0.6616717755820382,
+        "std": 0.03322390437946601
+      },
+      "util_gpu": {
+        "mean": 0.1520629503879996,
+        "std": 0.015055318284933429
+      },
+      "util_disk": {
+        "mean": 0.40057964216891917,
+        "std": 0.022795792902713923
+      },
+      "mean_wait": {
+        "mean": 385.97475613919084,
+        "std": 107.503167454147
+      },
+      "mean_response": {
+        "mean": 595.1125737117375,
+        "std": 109.26497766605381
+      },
+      "n_rrd_events": {
+        "mean": 23.25,
+        "std": 5.176953491932018
+      },
+      "n_dynamic_tasks": {
+        "mean": 34.75,
+        "std": 8.137848380941147
+      },
+      "latency_ms_mean": {
+        "mean": 0.3925068809745873,
+        "std": 0.15005791440268004
+      },
+      "latency_ms_p95": {
+        "mean": 1.483545464967993,
+        "std": 2.049569801633787
+      },
+      "n_runs": 60
+    },
+    "GM-HRL-genomic": {
+      "makespan": {
+        "mean": 10237.073033874189,
+        "std": 723.4520664237621
+      },
+      "makespan_over_lb": {
+        "mean": 1.068412120799866,
+        "std": 0.03765000900623995
+      },
+      "sla_violation_rate": {
+        "mean": 0.25051211410833657,
+        "std": 0.08544568108244124
+      },
+      "util_cpu": {
+        "mean": 0.7545035091053105,
+        "std": 0.04080132973524168
+      },
+      "util_ram": {
+        "mean": 0.6604156715421124,
+        "std": 0.032507642055496895
+      },
+      "util_gpu": {
+        "mean": 0.15175578110807822,
+        "std": 0.01474371074643493
+      },
+      "util_disk": {
+        "mean": 0.3998893320989134,
+        "std": 0.023709757247344112
+      },
+      "mean_wait": {
+        "mean": 432.5734467973469,
+        "std": 110.09985774157288
+      },
+      "mean_response": {
+        "mean": 641.7112643698936,
+        "std": 111.78137490557113
+      },
+      "n_rrd_events": {
+        "mean": 23.25,
+        "std": 5.176953491932018
+      },
+      "n_dynamic_tasks": {
+        "mean": 34.75,
+        "std": 8.137848380941147
+      },
+      "latency_ms_mean": {
+        "mean": 601.452371223005,
+        "std": 43.53956052917049
+      },
+      "latency_ms_p95": {
+        "mean": 922.8279976802876,
+        "std": 140.86040158414863
+      },
+      "n_runs": 60
+    },
+    "GM-HRL-in-domain": {
+      "makespan": {
+        "mean": 10155.537832703938,
+        "std": 726.742182153547
+      },
+      "makespan_over_lb": {
+        "mean": 1.0598260041541092,
+        "std": 0.03708808944128383
+      },
+      "sla_violation_rate": {
+        "mean": 0.2290540207692686,
+        "std": 0.08956179012936634
+      },
+      "util_cpu": {
+        "mean": 0.7606516308788893,
+        "std": 0.04180521218215868
+      },
+      "util_ram": {
+        "mean": 0.6657995023097655,
+        "std": 0.03346243741912651
+      },
+      "util_gpu": {
+        "mean": 0.15299639727871076,
+        "std": 0.014998885702815613
+      },
+      "util_disk": {
+        "mean": 0.40317922090468855,
+        "std": 0.0248070552030775
+      },
+      "mean_wait": {
+        "mean": 379.04630372228934,
+        "std": 107.43097625831513
+      },
+      "mean_response": {
+        "mean": 588.184121294836,
+        "std": 109.29121912847495
+      },
+      "n_rrd_events": {
+        "mean": 23.25,
+        "std": 5.176953491932018
+      },
+      "n_dynamic_tasks": {
+        "mean": 34.75,
+        "std": 8.137848380941147
+      },
+      "latency_ms_mean": {
+        "mean": 610.0062296050645,
+        "std": 48.02462119018125
+      },
+      "latency_ms_p95": {
+        "mean": 1177.676494877572,
+        "std": 94.87039136816367
+      },
+      "n_runs": 60
+    }
+  },
+  "paired_tests_vs": "GM-HRL-genomic",
+  "paired_tests": {
+    "HEFT": {
+      "makespan": {
+        "p_value": 0.00021818711374948298,
+        "ref_better_share": 0.25,
+        "mean_diff_ref_minus_other": 86.65789630555574
+      },
+      "sla_violation_rate": {
+        "p_value": 2.6364646086129447e-07,
+        "ref_better_share": 0.13333333333333333,
+        "mean_diff_ref_minus_other": 0.021578726459368838
+      }
+    },
+    "GA": {
+      "makespan": {
+        "p_value": 0.4013443276092331,
+        "ref_better_share": 0.45,
+        "mean_diff_ref_minus_other": 20.4628900523473
+      },
+      "sla_violation_rate": {
+        "p_value": 2.533263230801153e-05,
+        "ref_better_share": 0.25,
+        "mean_diff_ref_minus_other": 0.018630098072164966
+      }
+    },
+    "GM-HRL-in-domain": {
+      "makespan": {
+        "p_value": 8.521418918061298e-05,
+        "ref_better_share": 0.2,
+        "mean_diff_ref_minus_other": 81.53520117025145
+      },
+      "sla_violation_rate": {
+        "p_value": 5.944188657461693e-07,
+        "ref_better_share": 0.2,
+        "mean_diff_ref_minus_other": 0.021458093339068
+      }
+    }
+  }
+}
