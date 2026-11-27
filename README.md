@@ -2,7 +2,7 @@
 
 Code and data for the paper
 
-> J. Wang, T. Zheng, X. Sun. *Graph-Mediated Hierarchical Reinforcement Learning with Dynamic Dependency Awareness.* Under review at *Computers & Operations Research*.
+> T. Zheng, J. Wang, X. Sun. *Graph-Mediated Hierarchical Reinforcement Learning with Dynamic Dependency Awareness.* Under review at *Computers & Operations Research*.
 
 The repository contains the simulator, GM-HRL, all baselines and ablations, the offline clairvoyant bound (CP-SAT), the scripts that produce every table in Section 6, the benchmark instances, and the dispatcher for the real-pipeline experiment. `METHOD_SPEC.md` gives the exact specification (state, actions, networks, rewards, training, baselines) that the code implements.
 
@@ -50,7 +50,7 @@ data/replication/         fresh instances for the replication study (seed 0300â€
 realrun/                  example pipeline specification and sample sheet
 realruns2/                real WGS pipeline runs (3 runs x 2 batches x {fifo,heft,gmhrl})
 results/                  per-experiment summary.json + runs.csv (see "Reproducing the paper's results")
-fig_timeline.pdf|.png     Fig. 6, realised schedule timeline of the real pipeline
+fig_timeline.pdf|.png     Fig. 3, event-driven SMDP decision timeline
 run_all.sh                v1 simulation experiments, restartable by phase
 run_extra.sh              v1 single-level GNN-PPO and ORH, then the final evaluation
 run_v2.sh                 v2 multi-workflow experiments (asymmetric observability)
